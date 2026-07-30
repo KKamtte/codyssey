@@ -15,9 +15,11 @@ QUIZ.md 과제를 완료하기 위한 단계별 작업 순서. 각 단계는 QUI
 - [x] 커밋: `feat: 메뉴 및 공통 입력 처리 구현`
 
 ## 2단계. Quiz 클래스
-- [ ] `Quiz` 클래스 정의 (속성: question, choices(4개), answer(1~4))
-- [ ] 메서드: 퀴즈 출력(`display`), 정답 확인(`check_answer`) 등
-- 커밋: `feat: Quiz 클래스 작성`
+- [x] `Quiz` 클래스 정의 (속성: question, choices(4개), answer(1~4))
+- [x] 메서드: 퀴즈 출력(`display`), 정답 확인(`check_answer`), 직렬화(`to_dict`/`from_dict`) 등
+- [x] 커밋: `feat: Quiz 클래스 작성`
+- [x] `quiz.py`로 분리해 `main.py` 가독성 확보
+- [x] 커밋: `refactor: Quiz 클래스를 quiz.py로 분리`
 
 ## 3단계. 기본 퀴즈 데이터
 - [ ] 본인이 선택한 주제로 퀴즈 5개 이상 작성 (문제/선택지 4개/정답)

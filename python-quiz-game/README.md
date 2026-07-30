@@ -21,6 +21,18 @@ python main.py
 ## 파일 구조
 (작성 예정)
 
+## 코드 구조
+
+### Quiz 클래스 (`quiz.py`)
+퀴즈 문제 하나를 표현하는 클래스. 문제 하나하나가 이 클래스의 인스턴스(객체)가 된다.
+
+- **속성**: `question`(문제), `choices`(선택지 4개, 리스트), `answer`(정답 번호)
+- **`__init__(self, question, choices, answer)`**: 객체 생성 시 호출되는 생성자. 전달받은 값을 `self.question`처럼 객체 속성으로 저장한다.
+- **`display(self, index)`**: 문제 번호와 문제 본문, 선택지를 `1. ~`, `2. ~` 형태로 화면에 출력한다.
+- **`check_answer(self, selected)`**: 사용자가 입력한 번호(`selected`)와 저장된 정답(`self.answer`)을 비교해 `True`/`False`를 반환한다. 실제 정답 처리와 점수 계산은 이 반환값을 받아 `QuizGame`에서 수행한다.
+- **`to_dict(self)`**: `Quiz` 객체를 `{"question": ..., "choices": [...], "answer": ...}` 형태의 딕셔너리로 변환한다. 파이썬 객체는 그대로 JSON에 저장할 수 없기 때문에, `state.json`에 저장하기 전 이 메서드로 변환한다.
+- **`from_dict(cls, data)`**: `to_dict()`의 반대 동작. `state.json`에서 읽어온 딕셔너리를 다시 `Quiz` 객체로 복원하는 클래스 메서드(`@classmethod`)다.
+
 ## 데이터 파일 설명 (state.json)
 (작성 예정 — state.json 경로, 역할, 필드 구조)
 
