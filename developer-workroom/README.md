@@ -1,21 +1,67 @@
 # 내 컴퓨터에 개발자용 작업실 꾸미기
 
 ## 프로젝트 개요
+Docker와 Docker Compose를 활용하여 Flask + PostgreSQL 메모장 API를 
+컨테이너 환경에서 구축하는 프로젝트
 
 ## 실행 환경
-OS/SHELL/TERMINAL
-Docker version
-Git version
+- OS: macOS (darwin/arm64)
+- Shell: zsh
+- Terminal: iTerm2
+- Docker: 20.10.21
+- Git: 2.39.5
 
 ## 수행 항목 체크 리스트
-터미널/권한/Dokcer/Dokcerfile/포트/볼륨/Git/GitHub
+- [x] 터미널 환경 구성
+- [x] Docker 설치 및 기본 점검
+- [x] Dockerfile 작성 및 이미지 빌드
+- [x] 포트 포워딩 (-p 옵션)
+- [x] 볼륨 영속성 검증
+- [x] Docker Compose 멀티 컨테이너 실행
+- [x] Compose 운영 명령어 (up/down/ps/logs)
+- [x] Git/GitHub 업로드
 
 ## 검증 방법
-어떤 명령으로 무엇을 확인했는지 + 결과 위치링크
-도커 생성 및 명령어 확인
-우분투 조작 및 명령어 확인
 
-도커 컴포즈 생성 및 조작
+### 도커 생성 및 명령어 확인
+| 검증 항목 | 명령어 | 결과 위치 |
+|-----------|--------|-----------|
+| 도커 버전 | `docker --version` | [바로가기](#도커-버전-확인-docker---version) |
+| 데몬 동작 | `docker info` | [바로가기](#도커-데몬-동작-여부-기록-docker-info) |
+| 이미지 목록 | `docker images` | [바로가기](#이미지-다운로드목록-확인) |
+| 컨테이너 목록 | `docker ps -a` | [바로가기](#컨테이너-실행중지목록) |
+| 로그 확인 | `docker logs -f` | [바로가기](#docker-logs) |
+| 리소스 확인 | `docker stats` | [바로가기](#docker-stats) |
+
+### 우분투 조작 및 명령어 확인
+| 검증 항목 | 명령어 | 결과 위치 |
+|-----------|--------|-----------|
+| 파일 조작 | `pwd/ls/mkdir/touch/cat` | [바로가기](#위치-확인-및-파일-조작) |
+| 권한 설정 | `chmod 755/700` | [바로가기](#파일-권한-변경-및-실행) |
+| 사용자 권한 차단 | `useradd + su` | [바로가기](#권한에-따른-수행-확인) |
+
+### 도커 컴포즈 생성 및 조작
+| 검증 항목 | 명령어 | 결과 위치 |
+|-----------|--------|-----------|
+| 멀티 컨테이너 실행 | `docker compose up --build` | [바로가기](#도커-컴포즈) |
+| API 동작 확인 | `curl POST/GET /memo` | [바로가기](#도커-컴포즈) |
+| 볼륨 영속성 | `docker compose down && up` | [바로가기](#도커-볼륨-영속성-검증) |
+| 백그라운드 실행 | `docker compose up -d` | [바로가기](#compose-운영-명령어) |
+| 상태 확인 | `docker compose ps` | [바로가기](#compose-운영-명령어) |
+| 로그 확인 | `docker compose logs` | [바로가기](#compose-운영-명령어) |
+| 종료 | `docker compose down` | [바로가기](#compose-운영-명령어) |
+
+### Git / GitHub 설정
+```shell
+git config --list
+remote.origin.url=git@github.com:KKamtte/codyssey.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.main.remote=origin
+branch.main.merge=refs/heads/main
+branch.developer-workroom.remote=origin
+branch.developer-workroom.merge=refs/heads/developer-workroom
+```
+![git-remote](./img/011.git.png)
 
 ### 도커 설치 및 기본 점검
 #### 도커 버전 확인 (docker --version)
@@ -433,6 +479,19 @@ curl localhost:5400                                                             
 <h1>Ubuntu + Python Multi-stage Build Success!</h1>%
 ```
 
+### 도커 컴포즈
+![docker-compose-up](./img/008.docker-compose-up.png)
+![server-curl](./img/009.server-curl.png)
+
+영속성 데이터 확인
+```shell
+docker volume ls | grep memo-data                                                                          255|127 err  23:06:26
+local     docker-compose_memo-data
+```
+
+서버 재실행 후 데이터 존재 여부 확인
+![server-restart](./img/010.server-restart.png)
+
 ### 도커 볼륨 영속성 검증
 - 도커 볼륨을 생성하고 컨테이너에 연결
 - 컨테이너 삭제 전/후 데이터를 확인하여 데이터가 유지됨을 증명
@@ -446,10 +505,108 @@ curl localhost:5400                                                             
 - 컨테이너 간 네트워크 통신이 가능한지 확인
 
 ### Compose 운영 명령어
-- up, down, ps, logs 를 사용해 실행/종료/상태/로그 관리
+1. 백그라운드 실행
+```shell
+docker compose up -d
+[+] Running 2/2
+ ⠿ Container docker-compose-db-1   Started                                                                                                                                                                 0.3s
+ ⠿ Container docker-compose-web-1  Started
+```
 
-### 환경 변수 활용
-- Dockerfile 또는 Compose 에서 환경 변수를 주입해 서버 포트/모드를 바꿔본다
+2. 상태 확인
+```shell
+docker compose ps
+NAME                   COMMAND                  SERVICE             STATUS              PORTS
+docker-compose-db-1    "docker-entrypoint.s…"   db                  running             5432/tcp
+docker-compose-web-1   "python app.py"          web                 running             0.0.0.0:5001->5001/tcp
+```
+
+3. 특성 서비스 로그
+```shell
+ocker compose logs web --tail 5
+docker-compose-web-1  | WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+docker-compose-web-1  |  * Running on all addresses (0.0.0.0)
+docker-compose-web-1  |  * Running on http://127.0.0.1:5001
+docker-compose-web-1  |  * Running on http://172.21.0.3:5001
+docker-compose-web-1  | Press CTRL+C to quit
+```
+
+4. 종료
+```shell
+docker compose down
+[+] Running 3/2
+ ⠿ Container docker-compose-web-1  Removed                                                                                                                                                                10.2s
+ ⠿ Container docker-compose-db-1   Removed                                                                                                                                                                 0.1s
+ ⠿ Network docker-compose_default  Removed
+```
+
 
 ## 트러블슈팅
-문제 -> 원인 가설 -> 확인 -> 해결/대안
+### 포트 충돌
+#### 문제
+```shell
+docker compose up --build
+
+Error response from daemon: Ports are not available: 
+exposing port TCP 0.0.0.0:5000 -> 0.0.0.0:0: 
+listen tcp 0.0.0.0:5000: bind: address already in use
+```
+
+#### 원인 가설
+docker-compose.yaml 에서 선언한 포트(5000)를 다른 프로세스가 이미 점유 중
+
+#### 확인
+```shell
+lsof -i :5000
+COMMAND     PID        USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+ControlCe  1232  seunghyeon  11u  IPv4  0x8e73c5df8c85b72  0t0  TCP *:commplex-main (LISTEN)
+ControlCe  1232  seunghyeon  12u  IPv6  0xd33ad895b2ca0704 0t0  TCP *:commplex-main (LISTEN)
+```
+PID 1232 의 ControlCe 프로세스(macOS Control Center)가 5000번 포트 점유 중
+
+#### 해결
+```yaml
+# docker-compose.yaml 포트 변경
+services:
+  web:
+    ports:
+      - "5001:5000"  # 5000:5000 → 5001:5000
+```
+```shell
+# 재실행
+docker compose up --build
+```
+
+### 빌드 캐시
+#### 문제
+```shell
+docker compose up --build
+
+[+] Building 7.6s (10/10) FINISHED  # 1차 빌드
+[+] Building 1.1s (10/10) FINISHED  # 2차 빌드
+```
+
+#### 원인가설
+app.py 만 수정했는데 pip install 까지 다시 실행되면 매번 수십 초 낭비
+
+레이어 순서에 따라 캐시 무효화 범위가 달라질 수 있음
+
+#### 확인
+```shell
+# 2차 빌드 로그
+=> CACHED [2/5] WORKDIR /app          # ✅ 캐시 사용
+=> CACHED [3/5] COPY requirements.txt # ✅ 캐시 사용
+=> CACHED [4/5] RUN pip install       # ✅ 캐시 사용
+=> [5/5] COPY app.py .                # 🔄 app.py 변경 → 재실행
+```
+requirements.txt 변경 없음 → pip install 캐시 그대로 사용
+
+app.py 변경 → 해당 레이어부터 재실행
+
+#### 해결
+```shell
+# Dockerfile 레이어 순서를 의도적으로 설계
+COPY requirements.txt .       # 3번째: 자주 안 바뀜
+RUN pip install -r requirements.txt  # 4번째: requirements 변경 시만 재실행
+COPY app.py .                 # 5번째: 자주 바뀜 → 마지막에 배치
+```
