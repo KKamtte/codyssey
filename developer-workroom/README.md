@@ -381,18 +381,57 @@ ls: cannot open directory 'study': Permission denied
 ```
 
 ### 기존 도커 기반 커스텀 이미지 제작
-- 방식 중 하나를 선택하여 기존 도커파일 기반의 커스텀 이미지
-  - 웹 서버 베이스 이미지 활용 + 정적 콘텐츠/설정 교체
-  - 리눅스 베이스 이미지 + 기본 기능(패키지/사용자/환경변수/헬스체크 등) 추가
-- 제작 결과는 아래 조건을 만족
-  - 커스텀 이미지 빌드 성공 및 컨테이너 실행 성공
-  - 다음을 포함
-    - 어떤 기존베이스를 선택했는지
-    - 내가 적용한 커스텀 포인트 각각의 목적
-    - 빌드/실행 명령 + 핵심 결과(출력/스크린샷)
+| 항목               | 내용                                           | 목적                             |
+|--------------------|------------------------------------------------|----------------------------------|
+| 베이스 이미지      | ubuntu:22.04                                   | 안정적인 LTS 환경                |
+| curl / vim 설치    | builder 단계                                   | 컨테이너 내부 디버깅 도구 확보   |
+| python3 / pip 설치 | stage-1 단계                                   | Flask 앱 실행 환경 구성          |
+| 계층형 빌드 구조   | FROM builder 상속                              | 공통 도구와 앱 환경 분리         |
+| EXPOSE 5000        | 포트 명시                                      | 외부 트래픽 수신 포트 선언       |
+| -p 5400:5000       | 포트 포워딩                                    | 호스트 5400 → 컨테이너 5000 연결 |
+| Dockerfile         | [docker/Dockerfile](./docker/Dockerfile)       | 커스텀 도커 파일                 |
+| Flask App          | [my-python-app/app.py](./my-python-app/app.py) | Flask 앱 서버                    |
+- Stage 1 (builder): ubuntu:22.04 + curl + vim
+- Stage 2 (stage-1): python3 + flask + app.py 복사
 
-### 포트 매핑 및 접속
-- 브라우저 접속화면/curl 을 기술 문서에 첨부
+1) 빌드
+```shell
+docker build -t my-py-server:1.0 -f docker/Dockerfile .                                                                           ok  22:29:22
+[+] Building 61.8s (11/11) FINISHED
+ => [internal] load build definition from Dockerfile                                                                                                                                                       0.0s
+ => => transferring dockerfile: 74B                                                                                                                                                                        0.0s
+ => [internal] load .dockerignore                                                                                                                                                                          0.0s
+ => => transferring context: 2B                                                                                                                                                                            0.0s
+ => [internal] load metadata for docker.io/library/ubuntu:22.04                                                                                                                                            1.0s
+ => [builder 1/3] FROM docker.io/library/ubuntu:22.04@sha256:0e0a0fc6d18feda9db1590da249ac93e8d5abfea8f4c3c0c849ce512b5ef8982                                                                              0.0s
+ => [internal] load build context                                                                                                                                                                          0.0s
+ => => transferring context: 637B                                                                                                                                                                          0.0s
+ => CACHED [builder 2/3] RUN apt-get update && apt-get install -y     curl     vim     && rm -rf /var/lib/apt/lists/*                                                                                      0.0s
+ => CACHED [builder 3/3] WORKDIR /app                                                                                                                                                                      0.0s
+ => [stage-1 1/3] RUN apt-get update && apt-get install -y     python3     python3-pip     && rm -rf /var/lib/apt/lists/*                                                                                 58.7s
+ => [stage-1 2/3] RUN pip3 install flask                                                                                                                                                                   1.2s
+ => [stage-1 3/3] COPY my-python-app/app.py .                                                                                                                                                              0.0s
+ => exporting to image                                                                                                                                                                                     0.7s
+ => => exporting layers                                                                                                                                                                                    0.7s
+ => => writing image sha256:fa5eb692b6d720924348d8bc0e070fb08067e89fa50a9562c0af3763fefef723                                                                                                               0.0s
+ => => naming to docker.io/library/my-py-server:1.0                                                                                                                                                        0.0s
+
+Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them
+```
+
+2) 실행
+```shell
+docker run -d -p 5400:5000 --name python-web my-py-server:1.0                                                                     ok  22:35:06
+19fd7b85c46ef073b3c37994744a3bb0db86239a16a0eefd5217a2c9329cf261
+```
+
+3) 접속 확인
+![python-server](./img/007.python-server.png)
+```shell
+curl localhost:5400                                                                                                               ok  22:35:12
+
+<h1>Ubuntu + Python Multi-stage Build Success!</h1>%
+```
 
 ### 도커 볼륨 영속성 검증
 - 도커 볼륨을 생성하고 컨테이너에 연결
