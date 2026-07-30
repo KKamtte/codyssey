@@ -27,9 +27,10 @@ QUIZ.md 과제를 완료하기 위한 단계별 작업 순서. 각 단계는 QUI
 - [x] 커밋: `feat: 기본 퀴즈 데이터 추가`
 
 ## 4단계. QuizGame 클래스 뼈대
-- [ ] `QuizGame` 클래스 정의 (속성: 퀴즈 목록, 최고 점수)
-- [ ] 메서드 뼈대: `show_menu`, `play_quiz`, `add_quiz`, `list_quizzes`, `show_score`, `save`, `load`
-- 커밋: `refactor: QuizGame 클래스 구조 정리`
+- [x] `QuizGame` 클래스 정의 (속성: 퀴즈 목록, 최고 점수) — `quiz_game.py`
+- [x] 메서드 뼈대: `show_menu`, `get_menu_choice`, `play_quiz`, `add_quiz`, `list_quizzes`, `show_score`, `save`, `load`, `run`
+- [x] `main.py`는 `QuizGame` 생성 및 실행만 담당하는 진입점으로 정리
+- [x] 커밋: `refactor: QuizGame 클래스 구조 정리`
 
 ## 5단계. 퀴즈 풀기 기능 (브랜치 활용)
 - [ ] `git checkout -b feature/play-quiz` 로 새 브랜치 생성

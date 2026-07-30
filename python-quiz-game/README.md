@@ -33,6 +33,11 @@ python main.py
 - **`to_dict(self)`**: `Quiz` 객체를 `{"question": ..., "choices": [...], "answer": ...}` 형태의 딕셔너리로 변환한다. 파이썬 객체는 그대로 JSON에 저장할 수 없기 때문에, `state.json`에 저장하기 전 이 메서드로 변환한다.
 - **`from_dict(cls, data)`**: `to_dict()`의 반대 동작. `state.json`에서 읽어온 딕셔너리를 다시 `Quiz` 객체로 복원하는 클래스 메서드(`@classmethod`)다.
 
+### QuizGame 클래스 (`quiz_game.py`)
+게임 전체(메뉴 진행, 퀴즈 관리, 점수 관리, 파일 저장/불러오기)를 책임지는 클래스. `main.py`는 이 클래스를 생성해 `run()`을 호출하는 진입점 역할만 한다.
+- **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수)
+- **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
+
 ## 데이터 파일 설명 (state.json)
 (작성 예정 — state.json 경로, 역할, 필드 구조)
 
