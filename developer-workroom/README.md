@@ -64,6 +64,9 @@ branch.developer-workroom.merge=refs/heads/developer-workroom
 ![git-remote](./img/011.git.png)
 
 ### 도커 설치 및 기본 점검
+#### hello-world
+![hwllo-world](./img/012.hello-world.png)
+
 #### 도커 버전 확인 (docker --version)
 ![docker-version](./img/001.docker-version.png)
 1. Client-Server (CS구조)
