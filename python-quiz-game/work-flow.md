@@ -4,9 +4,8 @@ QUIZ.md 과제를 완료하기 위한 단계별 작업 순서. 각 단계는 QUI
 최종적으로 최소 10개 이상의 의미 있는 커밋, 브랜치 생성/병합 1회 이상, clone/pull 각 1회 이상, git 기초 명령어 7종(init, add, commit, push, pull, checkout, clone) 사용이 목표다.
 
 ## 0단계. 저장소 준비
-- [ ] `README.md` 초안 생성 (틀만 먼저, 내용은 마지막 단계에서 채움)
-- 커밋: `Feat: 프로젝트 초기 설정 (.gitignore, README 뼈대)`
-- `git push`로 원격에 첫 push
+- [x] `README.md` 초안 생성 (틀만 먼저, 내용은 마지막 단계에서 채움)
+- [x] 커밋: `Feat: 퀴즈 게임 프로젝트 초기 설정 (.gitignore, README 뼈대)`
 
 ## 1단계. 메뉴 기능
 - [ ] `main.py`에서 메뉴 출력 (`1.퀴즈 풀기 2.퀴즈 추가 3.퀴즈 목록 4.점수 확인 5.종료`)
