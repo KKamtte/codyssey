@@ -37,6 +37,7 @@ python main.py
 게임 전체(메뉴 진행, 퀴즈 관리, 점수 관리, 파일 저장/불러오기)를 책임지는 클래스. `main.py`는 이 클래스를 생성해 `run()`을 호출하는 진입점 역할만 한다.
 - **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수)
 - **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
+- **`_read_choice(self, prompt, min_value, max_value)`**: 숫자 입력 공통 검증 로직(공백 제거, 숫자 변환 실패, 범위 밖, 빈 입력 처리 후 재입력)을 담당하는 내부 헬퍼. `get_menu_choice`(메뉴 선택)와 `play_quiz`(정답 입력)가 이 메서드를 공유해서 사용한다.
 
 ## 데이터 파일 설명 (state.json)
 (작성 예정 — state.json 경로, 역할, 필드 구조)

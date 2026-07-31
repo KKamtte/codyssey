@@ -72,27 +72,55 @@ class QuizGame:
         print("=" * 40)
 
     def get_menu_choice(self):
+        return self._read_choice("선택: ", MENU_PLAY, MENU_EXIT)
+
+    def _read_choice(self, prompt, min_value, max_value):
         while True:
-            raw = input("선택: ").strip()
+            raw = input(prompt).strip()
 
             if raw == "":
-                print("⚠️ 빈 입력입니다. 1-5 사이의 숫자를 입력하세요.")
+                print(f"⚠️ 빈 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
                 continue
 
             if not raw.isdigit():
-                print("⚠️ 잘못된 입력입니다. 1-5 사이의 숫자를 입력하세요.")
+                print(f"⚠️ 잘못된 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
                 continue
 
             choice = int(raw)
-            if choice < MENU_PLAY or choice > MENU_EXIT:
-                print("⚠️ 잘못된 입력입니다. 1-5 사이의 숫자를 입력하세요.")
+            if choice < min_value or choice > max_value:
+                print(f"⚠️ 잘못된 입력입니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
                 continue
 
             return choice
 
     def play_quiz(self):
-        # 5단계에서 구현 예정
-        print("📝 퀴즈 풀기 기능은 아직 준비 중입니다.")
+        if not self.quizzes:
+            print("📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
+            return
+
+        total = len(self.quizzes)
+        print(f"📝 퀴즈를 시작합니다! (총 {total}문제)")
+
+        correct_count = 0
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print("-" * 40)
+            quiz.display(index)
+            print()
+            selected = self._read_choice("정답 입력: ", 1, len(quiz.choices))
+
+            if quiz.check_answer(selected):
+                print("✅ 정답입니다!")
+                correct_count += 1
+            else:
+                print(f"❌ 오답입니다. (정답: {quiz.answer}번)")
+
+        score = round(correct_count / total * 100)
+        print("=" * 40)
+        print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        if score > self.best_score:
+            self.best_score = score
+            print("🎉 새로운 최고 점수입니다!")
+        print("=" * 40)
 
     def add_quiz(self):
         # 6단계에서 구현 예정

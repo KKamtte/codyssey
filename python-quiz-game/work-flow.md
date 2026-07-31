@@ -33,12 +33,12 @@ QUIZ.md 과제를 완료하기 위한 단계별 작업 순서. 각 단계는 QUI
 - [x] 커밋: `refactor: QuizGame 클래스 구조 정리`
 
 ## 5단계. 퀴즈 풀기 기능 (브랜치 활용)
-- [ ] `git checkout -b feature/play-quiz` 로 새 브랜치 생성
-- [ ] 퀴즈 출제 → 정답 입력 → 정답/오답 표시 → 전체 결과 표시
-- [ ] 퀴즈가 없는 경우 처리
-- 커밋: `feat: 퀴즈 풀기 기능 구현` (브랜치 내에서)
-- `git checkout main` → `git merge feature/play-quiz` 로 병합
-- 병합 커밋 push
+- [x] `git checkout -b feat/play-quiz` 로 새 브랜치 생성
+- [x] 퀴즈 출제 → 정답 입력 → 정답/오답 표시 → 전체 결과 표시
+- [x] 퀴즈가 없는 경우 처리
+- [x] 커밋: `feat: 퀴즈 풀기 기능 구현` (브랜치 내에서)
+- [x] `git checkout main` → `git merge feat/play-quiz` 로 병합
+- [x] 병합 커밋 push
 
 ## 6단계. 퀴즈 추가 기능
 - [ ] 문제/선택지 4개/정답 번호 입력받기
