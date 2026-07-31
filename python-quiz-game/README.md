@@ -38,6 +38,8 @@ python main.py
 - **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수)
 - **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
 - **`_read_choice(self, prompt, min_value, max_value)`**: 숫자 입력 공통 검증 로직(공백 제거, 숫자 변환 실패, 범위 밖, 빈 입력 처리 후 재입력)을 담당하는 내부 헬퍼. `get_menu_choice`(메뉴 선택)와 `play_quiz`(정답 입력)가 이 메서드를 공유해서 사용한다.
+- **`_read_text(self, prompt)`**: 텍스트 입력 공통 검증 로직(빈 입력 시 재입력)을 담당하는 내부 헬퍼. `add_quiz`에서 문제/선택지 입력을 받을 때 사용한다.
+- **`add_quiz(self)`**: 문제, 선택지 4개, 정답 번호(1~4)를 순서대로 입력받아 `Quiz`를 생성하고 `self.quizzes`에 추가한 뒤 `self.save()`를 호출한다. 단, `save()`는 아직 뼈대만 있는 상태(9단계에서 실제 state.json 저장 로직 구현 예정)라 지금은 추가한 퀴즈가 프로그램 종료 후에는 사라진다.
 
 ## 데이터 파일 설명 (state.json)
 (작성 예정 — state.json 경로, 역할, 필드 구조)

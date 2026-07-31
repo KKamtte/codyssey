@@ -93,6 +93,14 @@ class QuizGame:
 
             return choice
 
+    def _read_text(self, prompt):
+        while True:
+            raw = input(prompt).strip()
+            if raw == "":
+                print("⚠️ 빈 입력입니다. 값을 입력해주세요.")
+                continue
+            return raw
+
     def play_quiz(self):
         if not self.quizzes:
             print("📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
@@ -123,8 +131,18 @@ class QuizGame:
         print("=" * 40)
 
     def add_quiz(self):
-        # 6단계에서 구현 예정
-        print("📌 퀴즈 추가 기능은 아직 준비 중입니다.")
+        print("📌 새로운 퀴즈를 추가합니다.")
+        print()
+
+        question = self._read_text("문제를 입력하세요: ")
+        choices = []
+        for i in range(1, 5):
+            choices.append(self._read_text(f"선택지 {i}: "))
+        answer = self._read_choice("정답 번호 (1-4): ", 1, 4)
+
+        self.quizzes.append(Quiz(question, choices, answer))
+        self.save()
+        print("✅ 퀴즈가 추가되었습니다!")
 
     def list_quizzes(self):
         # 7단계에서 구현 예정
