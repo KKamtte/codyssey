@@ -39,11 +39,26 @@ python main.py
 - **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
 - **`_read_choice(self, prompt, min_value, max_value)`**: 숫자 입력 공통 검증 로직(공백 제거, 숫자 변환 실패, 범위 밖, 빈 입력 처리 후 재입력)을 담당하는 내부 헬퍼. `get_menu_choice`(메뉴 선택)와 `play_quiz`(정답 입력)가 이 메서드를 공유해서 사용한다.
 - **`_read_text(self, prompt)`**: 텍스트 입력 공통 검증 로직(빈 입력 시 재입력)을 담당하는 내부 헬퍼. `add_quiz`에서 문제/선택지 입력을 받을 때 사용한다.
-- **`add_quiz(self)`**: 문제, 선택지 4개, 정답 번호(1~4)를 순서대로 입력받아 `Quiz`를 생성하고 `self.quizzes`에 추가한 뒤 `self.save()`를 호출한다. 단, `save()`는 아직 뼈대만 있는 상태(9단계에서 실제 state.json 저장 로직 구현 예정)라 지금은 추가한 퀴즈가 프로그램 종료 후에는 사라진다.
+- **`add_quiz(self)`**: 문제, 선택지 4개, 정답 번호(1~4)를 순서대로 입력받아 `Quiz`를 생성하고 `self.quizzes`에 추가한 뒤 `self.save()`를 호출해 파일에 반영한다.
 - **`best_score`가 `0`이 아닌 `None`으로 초기화되는 이유**: 문제를 다 틀려서 받은 "0점"과 "아직 한 번도 안 풀어본 상태"를 구분하기 위함이다. `play_quiz`는 `self.best_score is None or score > self.best_score` 조건으로 최고 점수 갱신 여부를 판단하고, `show_score`는 `best_score is None`이면 "아직 퀴즈를 푼 기록이 없습니다"를 출력한다.
+- **`save(self)` / `load(self)`**: `state.json` 저장·불러오기를 담당한다. 자세한 내용은 아래 [데이터 파일 설명](#데이터-파일-설명-statejson) 참고.
 
 ## 데이터 파일 설명 (state.json)
-(작성 예정 — state.json 경로, 역할, 필드 구조)
+- **경로**: 프로젝트 루트의 `state.json` (`quiz_game.py` 파일 위치 기준 `Path(__file__).resolve().parent`로 계산해서, 어느 위치에서 `python main.py`를 실행해도 항상 프로젝트 루트에 저장/조회한다.)
+- **역할**: 등록된 퀴즈 목록과 최고 점수를 저장해, 프로그램을 종료했다가 다시 실행해도 데이터가 유지되게 한다.
+- **필드 구조**:
+  ```json
+  {
+    "quizzes": [
+      { "question": "문제", "choices": ["선택지1", "선택지2", "선택지3", "선택지4"], "answer": 1 }
+    ],
+    "best_score": 80
+  }
+  ```
+  `best_score`는 아직 한 번도 퀴즈를 풀지 않았다면 `null`이다.
+- **저장 시점**: 퀴즈 추가(`add_quiz`), 새 최고 점수 달성(`play_quiz`), `Ctrl+C`/`Ctrl+D` 등으로 중단될 때(`main.py`) — 상태가 바뀔 때마다 저장한다.
+- **불러오기**: `main.py`가 시작할 때 `game.load()`를 호출한다. 파일이 없으면 `QuizGame.__init__`에서 이미 설정한 기본 퀴즈 데이터를 그대로 사용한다. 파일 내용이 JSON으로 파싱되지 않거나 필요한 키가 없는 등 손상된 경우에는 안내 메시지를 출력하고 기본 퀴즈 데이터로 초기화한다.
+- **인코딩**: UTF-8 (`open(..., encoding="utf-8")`), 한글 문제/선택지도 깨지지 않고 그대로 저장된다.
 
 ## 실행 화면 스크린샷
 - docs/screenshots/menu.png

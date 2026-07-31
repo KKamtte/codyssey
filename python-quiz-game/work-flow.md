@@ -58,11 +58,12 @@ QUIZ.md 과제를 완료하기 위한 단계별 작업 순서. 각 단계는 QUI
 - [x] 커밋: `feat: 점수 확인 기능 구현`
 
 ## 9단계. 파일 저장/불러오기 (state.json)
-- [ ] `state.json`에 quizzes, best_score UTF-8로 저장
-- [ ] 프로그램 시작 시 불러오기
-- [ ] 파일 없음 → 기본 데이터 사용
-- [ ] 파일 손상 → try/except로 안내 후 기본 데이터로 초기화
-- 커밋: `feat: state.json 저장/불러오기 기능 구현`
+- [x] `state.json`에 quizzes, best_score UTF-8로 저장 (`save`, 프로젝트 루트 경로 고정)
+- [x] 프로그램 시작 시 불러오기 (`main.py`에서 `game.load()` 호출)
+- [x] 파일 없음 → 기본 데이터 사용 (`load`가 조용히 반환, `__init__`의 기본값 유지)
+- [x] 파일 손상 → try/except로 안내 후 기본 데이터로 초기화
+- [x] `KeyboardInterrupt`/`EOFError` 발생 시에도 `game.save()` 호출해 종료 전 저장
+- [x] 커밋: `feat: state.json 저장/불러오기 기능 구현`
 
 ## 10단계. 통합 테스트 및 리팩터링
 - [ ] 전체 시나리오 수동 테스트 (풀기/추가/목록/점수/종료, 잘못된 입력, 재실행 후 유지 확인)

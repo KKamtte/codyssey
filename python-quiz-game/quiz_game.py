@@ -1,4 +1,9 @@
+import json
+from pathlib import Path
+
 from quiz import Quiz
+
+STATE_FILE = Path(__file__).resolve().parent / "state.json"
 
 MENU_PLAY = 1
 MENU_ADD = 2
@@ -165,12 +170,33 @@ class QuizGame:
         print(f"🏆 최고 점수: {self.best_score}점")
 
     def save(self):
-        # 9단계에서 구현 예정 (state.json 저장)
-        pass
+        data = {
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],
+            "best_score": self.best_score,
+        }
+        try:
+            with open(STATE_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except OSError as e:
+            print(f"⚠️ 데이터 저장에 실패했습니다: {e}")
 
     def load(self):
-        # 9단계에서 구현 예정 (state.json 불러오기)
-        pass
+        if not STATE_FILE.exists():
+            return
+
+        try:
+            with open(STATE_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            self.quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
+            self.best_score = data.get("best_score")
+        except (json.JSONDecodeError, KeyError, TypeError, OSError):
+            print("⚠️ 저장된 데이터가 손상되어 기본 데이터로 초기화합니다.")
+            self.quizzes = list(DEFAULT_QUIZZES)
+            self.best_score = None
+            return
+
+        score_display = "없음" if self.best_score is None else f"{self.best_score}점"
+        print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {score_display})")
 
     def run(self):
         while True:
