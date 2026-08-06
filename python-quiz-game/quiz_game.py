@@ -10,7 +10,8 @@ MENU_PLAY = 1
 MENU_ADD = 2
 MENU_LIST = 3
 MENU_SCORE = 4
-MENU_EXIT = 5
+MENU_DELETE = 5
+MENU_EXIT = 6
 
 DEFAULT_QUIZZES = [
     Quiz(
@@ -82,7 +83,8 @@ class QuizGame:
         print("2. 퀴즈 추가")
         print("3. 퀴즈 목록")
         print("4. 점수 확인")
-        print("5. 종료")
+        print("5. 퀴즈 삭제")
+        print("6. 종료")
         print("=" * 40)
 
     def get_menu_choice(self):
@@ -232,6 +234,19 @@ class QuizGame:
             print(f"[{index}] {quiz.question}")
         print("-" * 40)
 
+    def delete_quiz(self):
+        if not self.quizzes:
+            print("📭 삭제할 퀴즈가 없습니다.")
+            return
+
+        self.list_quizzes()
+        index = self._read_choice(
+            "삭제할 퀴즈 번호: ", 1, len(self.quizzes)
+        )
+        removed = self.quizzes.pop(index - 1)
+        self.save()
+        print(f"🗑️ 퀴즈가 삭제되었습니다: {removed.question}")
+
     def show_score(self):
         if self.best_score is None:
             print("📭 아직 퀴즈를 푼 기록이 없습니다.")
@@ -295,6 +310,8 @@ class QuizGame:
                 self.list_quizzes()
             elif choice == MENU_SCORE:
                 self.show_score()
+            elif choice == MENU_DELETE:
+                self.delete_quiz()
             elif choice == MENU_EXIT:
                 print("👋 게임을 종료합니다.")
                 break
