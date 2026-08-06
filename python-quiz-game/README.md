@@ -12,10 +12,11 @@ python main.py
 ```
 
 ## 기능 목록
-- 퀴즈 풀기
-- 퀴즈 추가
+- 퀴즈 풀기 (랜덤 출제, 풀 문제 수 선택, 힌트 보기)
+- 퀴즈 추가 (힌트 포함)
 - 퀴즈 목록 보기
-- 점수 확인
+- 점수 확인 (최고 점수 + 최근 게임 기록)
+- 퀴즈 삭제
 - 종료
 
 ## 파일 구조
@@ -41,23 +42,28 @@ python-quiz-game/
 ### Quiz 클래스 (`quiz.py`)
 퀴즈 문제 하나를 표현하는 클래스. 문제 하나하나가 이 클래스의 인스턴스(객체)가 된다.
 
-- **속성**: `question`(문제), `choices`(선택지 4개, 리스트), `answer`(정답 번호)
-- **`__init__(self, question, choices, answer)`**: 객체 생성 시 호출되는 생성자. 전달받은 값을 `self.question`처럼 객체 속성으로 저장한다.
+- **속성**: `question`(문제), `choices`(선택지 4개, 리스트), `answer`(정답 번호), `hint`(힌트 문구, 없으면 빈 문자열)
+- **`__init__(self, question, choices, answer, hint="")`**: 객체 생성 시 호출되는 생성자. 전달받은 값을 `self.question`처럼 객체 속성으로 저장한다.
 - **`display(self, index)`**: 문제 번호와 문제 본문, 선택지를 `1. ~`, `2. ~` 형태로 화면에 출력한다.
 - **`check_answer(self, selected)`**: 사용자가 입력한 번호(`selected`)와 저장된 정답(`self.answer`)을 비교해 `True`/`False`를 반환한다. 실제 정답 처리와 점수 계산은 이 반환값을 받아 `QuizGame`에서 수행한다.
-- **`to_dict(self)`**: `Quiz` 객체를 `{"question": ..., "choices": [...], "answer": ...}` 형태의 딕셔너리로 변환한다. 파이썬 객체는 그대로 JSON에 저장할 수 없기 때문에, `state.json`에 저장하기 전 이 메서드로 변환한다.
-- **`from_dict(cls, data)`**: `to_dict()`의 반대 동작. `state.json`에서 읽어온 딕셔너리를 다시 `Quiz` 객체로 복원하는 클래스 메서드(`@classmethod`)다.
+- **`to_dict(self)`**: `Quiz` 객체를 `{"question": ..., "choices": [...], "answer": ..., "hint": ...}` 형태의 딕셔너리로 변환한다. 파이썬 객체는 그대로 JSON에 저장할 수 없기 때문에, `state.json`에 저장하기 전 이 메서드로 변환한다.
+- **`from_dict(cls, data)`**: `to_dict()`의 반대 동작. `state.json`에서 읽어온 딕셔너리를 다시 `Quiz` 객체로 복원하는 클래스 메서드(`@classmethod`)다. 기존에 `hint` 필드 없이 저장된 `state.json`도 `data.get("hint", "")`로 안전하게 복원한다.
 
 ### QuizGame 클래스 (`quiz_game.py`)
 게임 전체(메뉴 진행, 퀴즈 관리, 점수 관리, 파일 저장/불러오기)를 책임지는 클래스. `main.py`는 이 클래스를 생성해 `run()`을 호출하는 진입점 역할만 한다.
-- **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수, 아직 한 번도 안 풀었으면 `None`), `best_correct_count`/`best_total`(최고 점수를 기록했을 당시 맞춘 문제 수/전체 문제 수)
-- **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
-- **`_read_choice(self, prompt, min_value, max_value)`**: 숫자 입력 공통 검증 로직(공백 제거, 숫자 변환 실패, 범위 밖, 빈 입력 처리 후 재입력)을 담당하는 내부 헬퍼. `get_menu_choice`(메뉴 선택)와 `play_quiz`(정답 입력)가 이 메서드를 공유해서 사용한다.
+- **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수, 아직 한 번도 안 풀었으면 `None`), `best_correct_count`/`best_total`(최고 점수를 기록했을 당시 맞춘 문제 수/전체 문제 수), `history`(플레이할 때마다 쌓이는 기록 리스트)
+- **메뉴 구성**: `1.퀴즈 풀기 2.퀴즈 추가 3.퀴즈 목록 4.점수 확인 5.퀴즈 삭제 6.종료` (`MENU_PLAY` ~ `MENU_EXIT` 상수로 관리)
+- **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`/`delete_quiz`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
+- **`_read_choice(self, prompt, min_value, max_value)`**: 숫자 입력 공통 검증 로직(공백 제거, 숫자 변환 실패, 범위 밖, 빈 입력 처리 후 재입력)을 담당하는 내부 헬퍼. `get_menu_choice`(메뉴 선택), `play_quiz`(문제 수·삭제 번호 선택) 등이 이 메서드를 공유해서 사용한다.
 - **`_read_text(self, prompt)`**: 텍스트 입력 공통 검증 로직(빈 입력 시 재입력)을 담당하는 내부 헬퍼. `add_quiz`에서 문제/선택지 입력을 받을 때 사용한다.
-- **`add_quiz(self)`**: 문제, 선택지 4개, 정답 번호(1~4)를 순서대로 입력받아 `Quiz`를 생성하고 `self.quizzes`에 추가한 뒤 `self.save()`를 호출해 파일에 반영한다.
+- **`_read_answer_choice(self, prompt, quiz)`**: 퀴즈 정답 입력 전용 헬퍼. `h`(대소문자 무관)를 입력하면 해당 문제의 `hint`를 출력하고 힌트 사용 여부(`hint_used`)를 `True`로 기록한 뒤 다시 같은 문제의 정답 입력을 받는다. 숫자 검증은 `_read_choice`와 동일한 규칙을 따른다.
+- **`add_quiz(self)`**: 문제, 선택지 4개, 정답 번호(1~4), 힌트(선택 입력)를 순서대로 입력받아 `Quiz`를 생성하고 `self.quizzes`에 추가한 뒤 `self.save()`를 호출해 파일에 반영한다.
+- **`play_quiz(self)`**: 원본 `self.quizzes` 순서는 건드리지 않고 복사본을 `random.shuffle()`로 섞어 매번 다른 순서로 출제한다. 퀴즈가 2개 이상이면 "몇 문제를 풀지" 먼저 입력받아(`_read_choice`, 1~전체 문제 수) 섞인 목록 앞에서부터 그 수만큼만 출제한다. 문제별로 힌트 없이 맞히면 1점, 힌트를 보고 맞히면 0.5점을 부여하고, 이 점수 합계를 실제로 푼 문제 수(`total`)로 나눈 백분율을 최종 점수로 계산한다. 종료 후 결과를 `history`에 추가하고, [최고 기록 갱신 조건](#최고-기록-갱신-조건동점자-처리)에 따라 최고 점수를 갱신한 뒤 `self.save()`를 호출한다.
+- **`delete_quiz(self)`**: `list_quizzes`와 같은 형식으로 목록을 보여준 뒤 삭제할 번호를 `_read_choice`로 입력받아 `self.quizzes`에서 제거하고 `self.save()`를 호출한다. 퀴즈가 없으면 안내 메시지만 출력하고 메뉴로 돌아간다.
 - **`best_score`가 `0`이 아닌 `None`으로 초기화되는 이유**: 문제를 다 틀려서 받은 "0점"과 "아직 한 번도 안 풀어본 상태"를 구분하기 위함이다. `show_score`는 `best_score is None`이면 "아직 퀴즈를 푼 기록이 없습니다"를 출력한다.
 - **최고 기록 갱신 조건(동점자 처리)**: `play_quiz`는 다음 중 하나라도 만족하면 최고 기록을 갱신한다 — ① 아직 기록이 없거나(`best_score is None`), ② 점수가 기존 최고 점수보다 높거나, ③ 점수가 같은데 이번에 푼 전체 문제 수(`total`)가 기존 기록의 `best_total`보다 많은 경우. 즉 퍼센트가 같으면 "더 많은 문제 중에서 만점을 받은 쪽"을 우대하고, 퍼센트와 문제 수까지 완전히 같으면 최초 기록을 그대로 유지한다.
-- **점수를 퍼센트(백분율)로 비교하는 이유**: 퀴즈 개수가 나중에 추가되어 늘어날 수 있기 때문에, 맞춘 문제 "개수"만으로 최고 기록을 비교하면 불공평하다 (예: 5문제 중 5개 정답(100%)보다 10문제 중 6개 정답(60%)이 개수는 더 많지만 실력은 더 낮다). 그래서 비교 자체는 항상 퍼센트로 하고, 기록이 갱신될 때 그 시점의 `correct_count`/`total`을 `best_correct_count`/`best_total`에 스냅샷으로 같이 저장해서 `show_score`에 "N문제 중 M문제 정답"처럼 세부 정보를 정확히 보여준다. (나중에 퀴즈 개수가 바뀌어도 이 스냅샷 값은 바뀌지 않는다.)
+- **점수를 퍼센트(백분율)로 비교하는 이유**: 퀴즈 개수가 나중에 추가되어 늘어날 수 있고, 매번 풀이 문제 수(`total`)도 달라질 수 있기 때문에, 맞춘 문제 "개수"만으로 최고 기록을 비교하면 불공평하다 (예: 5문제 중 5개 정답(100%)보다 10문제 중 6개 정답(60%)이 개수는 더 많지만 실력은 더 낮다). 그래서 비교 자체는 항상 퍼센트로 하고, 기록이 갱신될 때 그 시점의 `correct_count`/`total`을 `best_correct_count`/`best_total`에 스냅샷으로 같이 저장해서 `show_score`에 "N문제 중 M문제 정답"처럼 세부 정보를 정확히 보여준다. (나중에 퀴즈 개수가 바뀌어도 이 스냅샷 값은 바뀌지 않는다.)
+- **`history`와 `show_score`**: `play_quiz`가 끝날 때마다 최고 점수 갱신 여부와 무관하게 `{"played_at": ISO 형식 일시, "total": 문제 수, "correct_count": 정답 수, "score": 점수}`가 `history`에 추가된다. `show_score`는 최고 점수 아래에 최근 5개 기록을 최신순으로 함께 보여준다.
 - **`save(self)` / `load(self)`**: `state.json` 저장·불러오기를 담당한다. 자세한 내용은 아래 [데이터 파일 설명](#데이터-파일-설명-statejson) 참고.
 
 ## 데이터 파일 설명 (state.json)
@@ -67,15 +73,23 @@ python-quiz-game/
   ```json
   {
     "quizzes": [
-      { "question": "문제", "choices": ["선택지1", "선택지2", "선택지3", "선택지4"], "answer": 1 }
+      {
+        "question": "문제",
+        "choices": ["선택지1", "선택지2", "선택지3", "선택지4"],
+        "answer": 1,
+        "hint": "힌트 문구 (없으면 빈 문자열)"
+      }
     ],
     "best_score": 80,
     "best_correct_count": 4,
-    "best_total": 5
+    "best_total": 5,
+    "history": [
+      { "played_at": "2026-08-07T05:39:07", "total": 7, "correct_count": 6, "score": 79 }
+    ]
   }
   ```
-  `best_score`/`best_correct_count`/`best_total`은 아직 한 번도 퀴즈를 풀지 않았다면 모두 `null`이다. `best_correct_count`/`best_total`은 최고 점수(`best_score`)를 기록했던 바로 그 순간의 "맞춘 문제 수 / 전체 문제 수" 스냅샷이라, 이후 퀴즈가 추가되어 전체 문제 수가 달라져도 값이 바뀌지 않는다.
-- **저장 시점**: 퀴즈 추가(`add_quiz`), 새 최고 점수 달성(`play_quiz`), `Ctrl+C`/`Ctrl+D` 등으로 중단될 때(`main.py`) — 상태가 바뀔 때마다 저장한다.
+  `best_score`/`best_correct_count`/`best_total`은 아직 한 번도 퀴즈를 풀지 않았다면 모두 `null`이다. `best_correct_count`/`best_total`은 최고 점수(`best_score`)를 기록했던 바로 그 순간의 "맞춘 문제 수 / 전체 문제 수" 스냅샷이라, 이후 퀴즈가 추가되어 전체 문제 수가 달라져도 값이 바뀌지 않는다. `history`는 퀴즈를 풀 때마다(최고 점수 갱신 여부와 무관하게) 한 건씩 쌓이는 플레이 기록 리스트이며, 아직 한 번도 풀지 않았다면 빈 리스트다. `hint`/`history` 필드가 없는 예전 형식의 `state.json`을 불러와도 각각 `""`/`[]`로 안전하게 처리된다.
+- **저장 시점**: 퀴즈 추가(`add_quiz`), 퀴즈 삭제(`delete_quiz`), 퀴즈를 풀고 난 직후(`play_quiz`, 최고 점수 갱신 여부와 무관하게 매번), `Ctrl+C`/`Ctrl+D` 등으로 중단될 때(`main.py`) — 상태가 바뀔 때마다 저장한다.
 - **불러오기**: `main.py`가 시작할 때 `game.load()`를 호출한다. 파일이 없으면 `QuizGame.__init__`에서 이미 설정한 기본 퀴즈 데이터를 그대로 사용한다. 파일 내용이 JSON으로 파싱되지 않거나 필요한 키가 없는 등 손상된 경우에는 안내 메시지를 출력하고 기본 퀴즈 데이터로 초기화한다.
 - **인코딩**: UTF-8 (`open(..., encoding="utf-8")`), 한글 문제/선택지도 깨지지 않고 그대로 저장된다.
 
