@@ -35,12 +35,14 @@ python main.py
 
 ### QuizGame 클래스 (`quiz_game.py`)
 게임 전체(메뉴 진행, 퀴즈 관리, 점수 관리, 파일 저장/불러오기)를 책임지는 클래스. `main.py`는 이 클래스를 생성해 `run()`을 호출하는 진입점 역할만 한다.
-- **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수, 아직 한 번도 안 풀었으면 `None`)
+- **속성**: `quizzes`(`Quiz` 목록), `best_score`(최고 점수, 아직 한 번도 안 풀었으면 `None`), `best_correct_count`/`best_total`(최고 점수를 기록했을 당시 맞춘 문제 수/전체 문제 수)
 - **메서드**: `show_menu`/`get_menu_choice`(메뉴 출력·입력), `play_quiz`/`add_quiz`/`list_quizzes`/`show_score`(각 기능), `save`/`load`(state.json 입출력), `run`(메인 루프)
 - **`_read_choice(self, prompt, min_value, max_value)`**: 숫자 입력 공통 검증 로직(공백 제거, 숫자 변환 실패, 범위 밖, 빈 입력 처리 후 재입력)을 담당하는 내부 헬퍼. `get_menu_choice`(메뉴 선택)와 `play_quiz`(정답 입력)가 이 메서드를 공유해서 사용한다.
 - **`_read_text(self, prompt)`**: 텍스트 입력 공통 검증 로직(빈 입력 시 재입력)을 담당하는 내부 헬퍼. `add_quiz`에서 문제/선택지 입력을 받을 때 사용한다.
 - **`add_quiz(self)`**: 문제, 선택지 4개, 정답 번호(1~4)를 순서대로 입력받아 `Quiz`를 생성하고 `self.quizzes`에 추가한 뒤 `self.save()`를 호출해 파일에 반영한다.
-- **`best_score`가 `0`이 아닌 `None`으로 초기화되는 이유**: 문제를 다 틀려서 받은 "0점"과 "아직 한 번도 안 풀어본 상태"를 구분하기 위함이다. `play_quiz`는 `self.best_score is None or score > self.best_score` 조건으로 최고 점수 갱신 여부를 판단하고, `show_score`는 `best_score is None`이면 "아직 퀴즈를 푼 기록이 없습니다"를 출력한다.
+- **`best_score`가 `0`이 아닌 `None`으로 초기화되는 이유**: 문제를 다 틀려서 받은 "0점"과 "아직 한 번도 안 풀어본 상태"를 구분하기 위함이다. `show_score`는 `best_score is None`이면 "아직 퀴즈를 푼 기록이 없습니다"를 출력한다.
+- **최고 기록 갱신 조건(동점자 처리)**: `play_quiz`는 다음 중 하나라도 만족하면 최고 기록을 갱신한다 — ① 아직 기록이 없거나(`best_score is None`), ② 점수가 기존 최고 점수보다 높거나, ③ 점수가 같은데 이번에 푼 전체 문제 수(`total`)가 기존 기록의 `best_total`보다 많은 경우. 즉 퍼센트가 같으면 "더 많은 문제 중에서 만점을 받은 쪽"을 우대하고, 퍼센트와 문제 수까지 완전히 같으면 최초 기록을 그대로 유지한다.
+- **점수를 퍼센트(백분율)로 비교하는 이유**: 퀴즈 개수가 나중에 추가되어 늘어날 수 있기 때문에, 맞춘 문제 "개수"만으로 최고 기록을 비교하면 불공평하다 (예: 5문제 중 5개 정답(100%)보다 10문제 중 6개 정답(60%)이 개수는 더 많지만 실력은 더 낮다). 그래서 비교 자체는 항상 퍼센트로 하고, 기록이 갱신될 때 그 시점의 `correct_count`/`total`을 `best_correct_count`/`best_total`에 스냅샷으로 같이 저장해서 `show_score`에 "N문제 중 M문제 정답"처럼 세부 정보를 정확히 보여준다. (나중에 퀴즈 개수가 바뀌어도 이 스냅샷 값은 바뀌지 않는다.)
 - **`save(self)` / `load(self)`**: `state.json` 저장·불러오기를 담당한다. 자세한 내용은 아래 [데이터 파일 설명](#데이터-파일-설명-statejson) 참고.
 
 ## 데이터 파일 설명 (state.json)
@@ -52,10 +54,12 @@ python main.py
     "quizzes": [
       { "question": "문제", "choices": ["선택지1", "선택지2", "선택지3", "선택지4"], "answer": 1 }
     ],
-    "best_score": 80
+    "best_score": 80,
+    "best_correct_count": 4,
+    "best_total": 5
   }
   ```
-  `best_score`는 아직 한 번도 퀴즈를 풀지 않았다면 `null`이다.
+  `best_score`/`best_correct_count`/`best_total`은 아직 한 번도 퀴즈를 풀지 않았다면 모두 `null`이다. `best_correct_count`/`best_total`은 최고 점수(`best_score`)를 기록했던 바로 그 순간의 "맞춘 문제 수 / 전체 문제 수" 스냅샷이라, 이후 퀴즈가 추가되어 전체 문제 수가 달라져도 값이 바뀌지 않는다.
 - **저장 시점**: 퀴즈 추가(`add_quiz`), 새 최고 점수 달성(`play_quiz`), `Ctrl+C`/`Ctrl+D` 등으로 중단될 때(`main.py`) — 상태가 바뀔 때마다 저장한다.
 - **불러오기**: `main.py`가 시작할 때 `game.load()`를 호출한다. 파일이 없으면 `QuizGame.__init__`에서 이미 설정한 기본 퀴즈 데이터를 그대로 사용한다. 파일 내용이 JSON으로 파싱되지 않거나 필요한 키가 없는 등 손상된 경우에는 안내 메시지를 출력하고 기본 퀴즈 데이터로 초기화한다.
 - **인코딩**: UTF-8 (`open(..., encoding="utf-8")`), 한글 문제/선택지도 깨지지 않고 그대로 저장된다.

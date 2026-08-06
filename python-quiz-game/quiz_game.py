@@ -61,9 +61,11 @@ DEFAULT_QUIZZES = [
 
 
 class QuizGame:
-    def __init__(self, quizzes=None, best_score=None):
+    def __init__(self, quizzes=None, best_score=None, best_correct_count=None, best_total=None):
         self.quizzes = quizzes if quizzes is not None else list(DEFAULT_QUIZZES)
         self.best_score = best_score
+        self.best_correct_count = best_correct_count
+        self.best_total = best_total
 
     def show_menu(self):
         print("=" * 40)
@@ -130,8 +132,14 @@ class QuizGame:
         score = round(correct_count / total * 100)
         print("=" * 40)
         print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
-        if self.best_score is None or score > self.best_score:
+
+        is_new_best = self.best_score is None or score > self.best_score or (
+            score == self.best_score and self.best_total is not None and total > self.best_total
+        )
+        if is_new_best:
             self.best_score = score
+            self.best_correct_count = correct_count
+            self.best_total = total
             self.save()
             print("🎉 새로운 최고 점수입니다!")
         print("=" * 40)
@@ -167,12 +175,17 @@ class QuizGame:
             print("📭 아직 퀴즈를 푼 기록이 없습니다.")
             return
 
-        print(f"🏆 최고 점수: {self.best_score}점")
+        if self.best_total is None or self.best_correct_count is None:
+            print(f"🏆 최고 점수: {self.best_score}점")
+        else:
+            print(f"🏆 최고 점수: {self.best_score}점 ({self.best_total}문제 중 {self.best_correct_count}문제 정답)")
 
     def save(self):
         data = {
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
             "best_score": self.best_score,
+            "best_correct_count": self.best_correct_count,
+            "best_total": self.best_total,
         }
         try:
             with open(STATE_FILE, "w", encoding="utf-8") as f:
@@ -189,13 +202,22 @@ class QuizGame:
                 data = json.load(f)
             self.quizzes = [Quiz.from_dict(item) for item in data["quizzes"]]
             self.best_score = data.get("best_score")
+            self.best_correct_count = data.get("best_correct_count")
+            self.best_total = data.get("best_total")
         except (json.JSONDecodeError, KeyError, TypeError, OSError):
             print("⚠️ 저장된 데이터가 손상되어 기본 데이터로 초기화합니다.")
             self.quizzes = list(DEFAULT_QUIZZES)
             self.best_score = None
+            self.best_correct_count = None
+            self.best_total = None
             return
 
-        score_display = "없음" if self.best_score is None else f"{self.best_score}점"
+        if self.best_score is None:
+            score_display = "없음"
+        elif self.best_total is None or self.best_correct_count is None:
+            score_display = f"{self.best_score}점"
+        else:
+            score_display = f"{self.best_score}점 ({self.best_total}문제 중 {self.best_correct_count}문제 정답)"
         print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {score_display})")
 
     def run(self):
