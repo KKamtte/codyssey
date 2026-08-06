@@ -1,4 +1,5 @@
 import json
+import random
 from pathlib import Path
 
 from quiz import Quiz
@@ -113,11 +114,14 @@ class QuizGame:
             print("📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
             return
 
-        total = len(self.quizzes)
+        quizzes_to_play = list(self.quizzes)
+        random.shuffle(quizzes_to_play)
+
+        total = len(quizzes_to_play)
         print(f"📝 퀴즈를 시작합니다! (총 {total}문제)")
 
         correct_count = 0
-        for index, quiz in enumerate(self.quizzes, start=1):
+        for index, quiz in enumerate(quizzes_to_play, start=1):
             print("-" * 40)
             quiz.display(index)
             print()
