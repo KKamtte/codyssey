@@ -85,15 +85,14 @@ QUIZ.md 과제를 완료하기 위한 단계별 작업 순서. 각 단계는 QUI
 - [x] 커밋: (수정 사항이 없어 테스트 확인만 진행, 별도 fix/refactor 커밋 불필요 — 필요 시 `test:` 또는 메모 성격의 커밋으로 기록 가능)
 
 ## 11단계. README 작성
-- [ ] 프로젝트 개요
-- [ ] 퀴즈 주제 선정 이유
-- [ ] 실행 방법 (`python main.py`)
-- [ ] 기능 목록
-- [ ] 파일 구조
-- [ ] 데이터 파일 설명 (state.json 경로/역할/스키마)
-- [ ] 스크린샷 경로 안내 (`docs/screenshots/menu.png`, `play.png`, `add_quiz.png`, `score.png`)
-- 커밋: `docs: README 작성`
-- `git push`로 최종 반영
+- [x] 프로젝트 개요
+- [x] 퀴즈 주제 선정 이유
+- [x] 실행 방법 (`python main.py`)
+- [x] 기능 목록
+- [x] 파일 구조
+- [x] 데이터 파일 설명 (state.json 경로/역할/스키마)
+- [x] 스크린샷 경로 안내 및 이미지 삽입 (`docs/screenshots/001.main-menu.png`, `002.play.png`, `003.add-quiz.png`, `004.score.png`)
+- [x] 커밋: `docs: README 작성`
 
 ## 12단계. Git 저장소 복제 실습 (clone & pull)
 - [ ] 별도 디렉터리에 `git clone`으로 저장소 복제

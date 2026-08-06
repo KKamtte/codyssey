@@ -1,10 +1,10 @@
 # 나만의 퀴즈 게임 (Python Quiz Game)
 
 ## 프로젝트 개요
-(작성 예정 — 프로젝트가 무엇을 하는지, 어떤 학습 목적으로 만들었는지 요약)
+터미널에서 동작하는 4지선다형 퀴즈 게임이다. 메뉴에서 번호를 선택해 퀴즈 풀기/추가/목록 확인/점수 확인을 할 수 있으며, 등록한 퀴즈와 최고 점수는 `state.json`에 저장되어 프로그램을 종료했다가 다시 실행해도 그대로 유지된다. Python 기본 문법(입출력, 조건/반복문, 함수)과 클래스 기반 구조화, JSON 파일 입출력을 통한 데이터 영속성, Git을 이용한 기능 단위 커밋/브랜치 워크플로우를 직접 익히기 위해 만들었다.
 
 ## 퀴즈 주제 선정 이유
-(작성 예정 — 어떤 주제를 선택했고 왜 선택했는지)
+주제는 **파이썬 기본 문법**으로 정했다. 이 과제 자체가 파이썬 문법과 클래스, 파일 입출력을 처음부터 끝까지 구현해보며 익히는 것이 목표였기 때문에, 배운 내용(자료형, 조건문/반복문, 함수, 클래스)을 그대로 퀴즈 문제로 다시 풀어보면 학습 내용을 복습하는 효과도 있을 것이라 판단했다.
 
 ## 실행 방법
 ```bash
@@ -19,7 +19,22 @@ python main.py
 - 종료
 
 ## 파일 구조
-(작성 예정)
+```
+python-quiz-game/
+├── main.py                  # 진입점 — QuizGame 생성, load()/run() 호출, Ctrl+C·EOF 처리
+├── quiz.py                  # Quiz 클래스 (퀴즈 1개 표현)
+├── quiz_game.py             # QuizGame 클래스 (메뉴/게임 진행/저장·불러오기), 기본 퀴즈 데이터
+├── state.json                # 실행 중 자동 생성/갱신되는 데이터 파일 (최초 실행 전에는 없음)
+├── work-flow.md              # 과제 진행 단계별 작업 기록
+├── README.md
+├── .gitignore
+└── docs/
+    └── screenshots/           # 실행 화면 스크린샷
+        ├── 001.main-menu.png
+        ├── 002.play.png
+        ├── 003.add-quiz.png
+        └── 004.score.png
+```
 
 ## 코드 구조
 
@@ -65,7 +80,15 @@ python main.py
 - **인코딩**: UTF-8 (`open(..., encoding="utf-8")`), 한글 문제/선택지도 깨지지 않고 그대로 저장된다.
 
 ## 실행 화면 스크린샷
-- docs/screenshots/menu.png
-- docs/screenshots/play.png
-- docs/screenshots/add_quiz.png
-- docs/screenshots/score.png
+
+### 메뉴 화면
+![메인 메뉴](docs/screenshots/001.main-menu.png)
+
+### 퀴즈 풀기
+![퀴즈 풀기](docs/screenshots/002.play.png)
+
+### 퀴즈 추가
+![퀴즈 추가](docs/screenshots/003.add-quiz.png)
+
+### 점수 확인
+![점수 확인](docs/screenshots/004.score.png)
