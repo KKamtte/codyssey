@@ -136,11 +136,11 @@ QUIZ.md 5번 항목의 보너스 과제 5개를 각각 하나의 기능 단위 �
 - [x] 커밋: `feat: 퀴즈 삭제 기능 추가`
 
 ### 18단계. 점수 기록 히스토리
-- [ ] `QuizGame.__init__`에 `history`(리스트, 기본값 `[]`) 속성 추가
-- [ ] `play_quiz`가 끝날 때마다(최고 점수 갱신 여부와 무관하게) `{"played_at": ISO 날짜/시간, "total": 문제 수, "correct_count": 정답 수, "score": 점수}`를 `history`에 추가 (`datetime.now().isoformat()` 사용)
-- [ ] `save`/`load`에 `history` 필드 저장/복원 추가. 기존 `state.json`에는 없는 키이므로 `load`에서 `data.get("history", [])`로 하위 호환 처리
-- [ ] 점수 확인(메뉴) 화면에 최근 게임 기록 목록(예: 최근 5개, 날짜/문제 수/점수)도 함께 출력
-- [ ] 커밋: `feat: 점수 기록 히스토리 저장 기능 추가`
+- [x] `QuizGame.__init__`에 `history`(리스트, 기본값 `[]`) 속성 추가
+- [x] `play_quiz`가 끝날 때마다(최고 점수 갱신 여부와 무관하게) `{"played_at": ISO 날짜/시간, "total": 문제 수, "correct_count": 정답 수, "score": 점수}`를 `history`에 추가 (`datetime.now().isoformat()` 사용)
+- [x] `save`/`load`에 `history` 필드 저장/복원 추가. 기존 `state.json`에는 없는 키이므로 `load`에서 `data.get("history", [])`로 하위 호환 처리
+- [x] 점수 확인(메뉴) 화면에 최근 게임 기록 목록(예: 최근 5개, 날짜/문제 수/점수)도 함께 출력
+- [x] 커밋: `feat: 점수 기록 히스토리 저장 기능 추가`
 
 ### 19단계. 보너스 기능 통합 테스트 및 문서 반영
 - [ ] 진행한 보너스 기능 전체 시나리오 재테스트: 랜덤 순서 확인, 문제 수 제한 동작, 힌트 사용 시 감점 확인, 퀴즈 삭제 후 목록/저장 확인, 히스토리 누적·재실행 후 유지 확인
