@@ -92,3 +92,6 @@ python-quiz-game/
 
 ### 점수 확인
 ![점수 확인](docs/screenshots/004.score.png)
+
+### 깃 로그
+![깃 로그](docs/screenshots/005.git-graph.png)
