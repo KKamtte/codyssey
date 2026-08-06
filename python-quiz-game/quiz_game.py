@@ -114,8 +114,17 @@ class QuizGame:
             print("📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
             return
 
+        available = len(self.quizzes)
+        if available == 1:
+            question_count = 1
+        else:
+            question_count = self._read_choice(
+                f"몇 문제를 푸시겠습니까? (1-{available}): ", 1, available
+            )
+
         quizzes_to_play = list(self.quizzes)
         random.shuffle(quizzes_to_play)
+        quizzes_to_play = quizzes_to_play[:question_count]
 
         total = len(quizzes_to_play)
         print(f"📝 퀴즈를 시작합니다! (총 {total}문제)")
