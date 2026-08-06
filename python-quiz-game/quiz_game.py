@@ -17,11 +17,13 @@ DEFAULT_QUIZZES = [
         "다음 중 정수(int)형 데이터는?",
         ["'10'", "10", "10.0", "True"],
         2,
+        hint="따옴표로 감싸지 않고, 소수점도 없는 숫자를 찾아보세요.",
     ),
     Quiz(
         "다음 중 문자열(str) 타입인 것은?",
         ["10", "3.14", "'Hello'", "True"],
         3,
+        hint="따옴표(' 또는 \")로 감싸진 값을 찾아보세요.",
     ),
     Quiz(
         "for문과 while문에 대한 설명으로 옳은 것은?",
@@ -32,11 +34,13 @@ DEFAULT_QUIZZES = [
             "for문과 while문은 완전히 동일하게 동작한다",
         ],
         3,
+        hint="리스트를 하나씩 순회할 때 어떤 반복문을 주로 쓰는지 떠올려보세요.",
     ),
     Quiz(
         "파이썬에서 함수를 정의할 때 사용하는 키워드는?",
         ["func", "def", "function", "define"],
         2,
+        hint="'define'의 줄임말입니다.",
     ),
     Quiz(
         "클래스의 __init__ 메서드가 하는 역할은?",
@@ -47,6 +51,7 @@ DEFAULT_QUIZZES = [
             "반복문을 실행한다",
         ],
         2,
+        hint="객체를 생성(instantiate)할 때 자동으로 호출되는 메서드입니다.",
     ),
     Quiz(
         "list와 dict의 차이로 옳은 것은?",
@@ -57,6 +62,7 @@ DEFAULT_QUIZZES = [
             "list와 dict는 동일한 자료구조이다",
         ],
         3,
+        hint="dict는 {key: value} 형태로 값을 저장합니다.",
     ),
 ]
 
@@ -109,6 +115,35 @@ class QuizGame:
                 continue
             return raw
 
+    def _read_answer_choice(self, prompt, quiz):
+        max_value = len(quiz.choices)
+        hint_used = False
+        while True:
+            raw = input(prompt).strip()
+
+            if raw.lower() == "h":
+                if quiz.hint:
+                    print(f"💡 힌트: {quiz.hint}")
+                    hint_used = True
+                else:
+                    print("💡 이 문제는 등록된 힌트가 없습니다.")
+                continue
+
+            if raw == "":
+                print(f"⚠️ 빈 입력입니다. 1-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+
+            if not raw.isdigit():
+                print(f"⚠️ 잘못된 입력입니다. 1-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+
+            choice = int(raw)
+            if choice < 1 or choice > max_value:
+                print(f"⚠️ 잘못된 입력입니다. 1-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+
+            return choice, hint_used
+
     def play_quiz(self):
         if not self.quizzes:
             print("📭 등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해주세요.")
@@ -130,21 +165,34 @@ class QuizGame:
         print(f"📝 퀴즈를 시작합니다! (총 {total}문제)")
 
         correct_count = 0
+        hint_used_count = 0
+        points = 0.0
         for index, quiz in enumerate(quizzes_to_play, start=1):
             print("-" * 40)
             quiz.display(index)
             print()
-            selected = self._read_choice("정답 입력: ", 1, len(quiz.choices))
+            selected, hint_used = self._read_answer_choice(
+                "정답 입력 (힌트를 보려면 h): ", quiz
+            )
+            if hint_used:
+                hint_used_count += 1
 
             if quiz.check_answer(selected):
-                print("✅ 정답입니다!")
                 correct_count += 1
+                if hint_used:
+                    points += 0.5
+                    print("✅ 정답입니다! (힌트 사용으로 0.5점 처리)")
+                else:
+                    points += 1
+                    print("✅ 정답입니다!")
             else:
                 print(f"❌ 오답입니다. (정답: {quiz.answer}번)")
 
-        score = round(correct_count / total * 100)
+        score = round(points / total * 100)
         print("=" * 40)
         print(f"🏆 결과: {total}문제 중 {correct_count}문제 정답! ({score}점)")
+        if hint_used_count:
+            print(f"💡 힌트를 사용한 문제: {hint_used_count}개")
 
         is_new_best = self.best_score is None or score > self.best_score or (
             score == self.best_score and self.best_total is not None and total > self.best_total
@@ -166,8 +214,9 @@ class QuizGame:
         for i in range(1, 5):
             choices.append(self._read_text(f"선택지 {i}: "))
         answer = self._read_choice("정답 번호 (1-4): ", 1, 4)
+        hint = input("힌트 (선택 사항, 없으면 Enter): ").strip()
 
-        self.quizzes.append(Quiz(question, choices, answer))
+        self.quizzes.append(Quiz(question, choices, answer, hint))
         self.save()
         print("✅ 퀴즈가 추가되었습니다!")
 
