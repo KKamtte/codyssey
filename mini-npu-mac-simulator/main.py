@@ -234,7 +234,7 @@ def read_matrix(title: str, n: int) -> Matrix:
         values, reason = parse_row(line, n)
         if values is None:
             print('  ' + reason)
-            continue  # 실패한 줄은 쌓지 않으므로 같은 번호를 다시 묻게 된다
+            continue  # 실패한 줄은 쌓지 않으므로 같은 줄을 다시 입력받는다
         matrix.append(values)
     return matrix
 
@@ -342,9 +342,18 @@ def build_filters(raw_filters: Any) -> Tuple[Dict[str, Dict[str, Matrix]], List[
     return filters, report
 
 
-def run_case(case_id: str, case: Any, filters: Dict[str, Dict[str, Matrix]]) -> Dict[str, Any]:
-    """케이스 하나를 판정해 결과 dict를 반환한다. 어떤 경우에도 예외를 던지지 않는다"""
-    result: Dict[str, Any] = {
+def _size_key(n: int) -> str:
+    """크기 n에 해당하는 필터 키를 만든다. extract_size의 반대 방향"""
+    return 'size_%d' % n
+
+
+def _new_case_result(case_id: str) -> Dict[str, Any]:
+    """케이스 결과 dict의 초기 형태. 실패로 시작해 통과했을 때만 값을 채운다
+
+    결과 dict를 만드는 곳이 두 군데(정상 경로와 예외 안전망)라 형태를 여기 한 번만 적는다.
+    키를 추가할 때 한쪽만 고치는 사고를 막기 위함이다.
+    """
+    return {
         'case_id': case_id,
         'ok': False,  # 스키마·크기 검증 통과 여부
         'score_cross': None,
@@ -355,12 +364,17 @@ def run_case(case_id: str, case: Any, filters: Dict[str, Dict[str, Matrix]]) -> 
         'reason': '',
     }
 
+
+def run_case(case_id: str, case: Any, filters: Dict[str, Dict[str, Matrix]]) -> Dict[str, Any]:
+    """케이스 하나를 판정해 결과 dict를 반환한다. 어떤 경우에도 예외를 던지지 않는다"""
+    result = _new_case_result(case_id)
+
     n = extract_size(case_id)
     if n is None:
         result['reason'] = '케이스 키에서 크기를 읽을 수 없습니다.'
         return result
 
-    size_key = 'size_%d' % n
+    size_key = _size_key(n)
     pair = filters.get(size_key)
     if pair is None:
         result['reason'] = '%s 필터를 사용할 수 없습니다.' % size_key
@@ -413,23 +427,16 @@ def run_cases(raw_patterns: Any,
         try:
             results.append(run_case(case_id, case, filters))
         except Exception as error:
-            results.append({
-                'case_id': case_id,
-                'ok': False,
-                'score_cross': None,
-                'score_x': None,
-                'predicted': None,
-                'expected': None,
-                'passed': False,
-                'reason': '예상하지 못한 오류: %s: %s' % (type(error).__name__, error),
-            })
+            result = _new_case_result(case_id)
+            result['reason'] = '예상하지 못한 오류: %s: %s' % (type(error).__name__, error)
+            results.append(result)
     return results
 
 
 def collect_perf_inputs(n: int, filters: Dict[str, Dict[str, Matrix]],
                         raw_patterns: Any) -> Tuple[Matrix, Matrix, bool]:
     """크기 n의 성능 측정에 쓸 (패턴, 필터, 생성기 사용 여부)를 고른다"""
-    pair = filters.get('size_%d' % n)
+    pair = filters.get(_size_key(n))
     if pair is not None:
         filter_matrix = pair[LABEL_CROSS]
         if isinstance(raw_patterns, dict):
