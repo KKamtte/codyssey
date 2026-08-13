@@ -6,6 +6,7 @@ MAC(Multiply-Accumulate) 연산으로 N×N 패턴이 Cross인지 X인지 판별�
 
 import json
 import time
+import unicodedata
 from typing import Any, Dict, List, Optional, Tuple
 
 Matrix = List[List[float]]
@@ -73,6 +74,20 @@ def mac(pattern: Matrix, filter_matrix: Matrix) -> float:
             product = pattern[row][col] * filter_matrix[row][col]  # Multiply
             total = total + product  # Accumulate
     return total
+
+
+def measure_mac_ms(pattern: Matrix, filter_matrix: Matrix, repeat: int = REPEAT) -> float:
+    """MAC 연산을 repeat회 반복한 뒤 1회당 평균 소요 시간을 ms 단위로 반환
+
+    측정 구간에는 mac() 호출만 들어간다. 출력·입력·파일 읽기는 물론 행렬 생성도
+    포함하지 않는다. 인자로 받은 행렬은 호출 전에 이미 준비되어 있어야 한다.
+    반복 루프를 함수 안에 둔 것도 호출부가 측정 구간에 다른 일을 섞지 못하게 하기 위함이다.
+    """
+    start = time.perf_counter()
+    for _ in range(repeat):
+        mac(pattern, filter_matrix)
+    elapsed = time.perf_counter() - start
+    return (elapsed / repeat) * 1000.0
 
 
 # ---------------------------------------------------------------
@@ -148,6 +163,45 @@ def generate_x(n: int) -> Matrix:
 # ---------------------------------------------------------------
 # [8] 출력 및 진입점
 # ---------------------------------------------------------------
+
+# 성능 표 컬럼 제목과 각 칸의 너비(터미널 출력 기준)
+PERF_HEADERS = ('크기(N×N)', '평균 시간(ms)', '연산 횟수(N²)')
+PERF_WIDTHS = (14, 16, 14)
+
+
+def _display_width(text: str) -> int:
+    """터미널에서 차지하는 칸 수를 센다"""
+    width = 0
+    for char in text:
+        if unicodedata.east_asian_width(char) in ('W', 'F'):
+            width += 2
+        else:
+            width += 1
+    return width
+
+
+def _pad(text: str, width: int, align_right: bool = False) -> str:
+    """표시 너비 기준으로 문자열을 width 칸에 맞춰 채운다"""
+    padding = ' ' * max(0, width - _display_width(text))
+    if align_right:
+        return padding + text
+    return text + padding
+
+
+def print_perf_table(rows: List[Tuple[int, float]]) -> None:
+    """크기별 평균 시간 표를 출력한다. rows는 (N, 평균 시간 ms) 목록"""
+    header = ''
+    for title, width in zip(PERF_HEADERS, PERF_WIDTHS):
+        header += _pad(title, width)
+    print(header)
+    print('-' * _display_width(header))
+
+    for n, avg_ms in rows:
+        line = _pad('%d×%d' % (n, n), PERF_WIDTHS[0])
+        line += _pad('%.3f' % avg_ms, PERF_WIDTHS[1] - 2, align_right=True) + '  '
+        line += _pad('%d' % (n * n), PERF_WIDTHS[2] - 2, align_right=True)
+        print(line)
+
 
 def main() -> None:
     print('=== Mini NPU Simulator ===')
