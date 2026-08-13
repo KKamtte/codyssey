@@ -35,6 +35,7 @@ MODE1_SIZE = 3
 # 메뉴 선택지
 MENU_INPUT = '1'
 MENU_JSON = '2'
+MENU_OPTIMIZE = '3'  # 보너스 과제
 MENU_QUIT = 'q'
 
 # 성능 측정 반복 횟수 (과제 최소 기준: 10회 반복 후 평균)
@@ -99,6 +100,44 @@ def measure_mac_ms(pattern: Matrix, filter_matrix: Matrix, repeat: int = REPEAT)
     start = time.perf_counter()
     for _ in range(repeat):
         mac(pattern, filter_matrix)
+    elapsed = time.perf_counter() - start
+    return (elapsed / repeat) * 1000.0
+
+
+# --- 보너스: 1차원 배열로 편 뒤 계산하는 방식 ---
+# 위의 mac()은 비교 대상이므로 그대로 둔다.
+
+def flatten(matrix: Matrix) -> List[float]:
+    """n×n 행렬을 길이 N²의 1차원 리스트로 편다
+
+    행을 꺼내고 다시 열을 꺼내는 2단계 접근이 1단계로 줄어든다.
+    변환 자체에도 비용이 들므로, 성능 비교에서는 측정 구간 밖에서 미리 펴 둔다.
+    """
+    flat = []
+    for row in matrix:
+        for value in row:
+            flat.append(value)
+    return flat
+
+
+def mac_flat(flat_pattern: List[float], flat_filter: List[float]) -> float:
+    """1차원으로 편 패턴과 필터의 MAC 점수를 반환한다. 루프가 하나로 줄어든다"""
+    total = 0.0
+    for index in range(len(flat_pattern)):
+        product = flat_pattern[index] * flat_filter[index]  # Multiply
+        total = total + product  # Accumulate
+    return total
+
+
+def measure_mac_flat_ms(flat_pattern: List[float], flat_filter: List[float],
+                        repeat: int = REPEAT) -> float:
+    """mac_flat을 repeat회 반복한 뒤 1회당 평균 시간을 ms로 반환
+
+    measure_mac_ms와 같은 방식으로 재야 비교가 성립한다. flatten 비용은 여기 포함되지 않는다.
+    """
+    start = time.perf_counter()
+    for _ in range(repeat):
+        mac_flat(flat_pattern, flat_filter)
     elapsed = time.perf_counter() - start
     return (elapsed / repeat) * 1000.0
 
@@ -475,6 +514,43 @@ def summarize(results: List[Dict[str, Any]]) -> Tuple[int, int, int]:
     return total, passed, total - passed
 
 
+def run_mode_optimize() -> None:
+    """보너스. 2차원 접근과 1차원 접근의 MAC 성능을 같은 조건에서 비교한다"""
+    print_section(1, '입력 준비')
+    data, reason = load_data(DATA_FILE)
+    filters: Dict[str, Dict[str, Matrix]] = {}
+    raw_patterns: Any = None
+    if data is None:
+        print('%s (생성기로 만든 패턴만 사용합니다)' % reason)
+    else:
+        filters, _ = build_filters(data.get('filters'))
+        raw_patterns = data.get('patterns')
+    print('크기 %s에 대해 동일 입력·동일 반복(%d회)으로 측정합니다.'
+          % (PERF_SIZES, REPEAT))
+
+    rows: List[Tuple[int, float, float]] = []
+    mismatched: List[int] = []
+    for n in PERF_SIZES:
+        pattern, filter_matrix, _ = collect_perf_inputs(n, filters, raw_patterns)
+        # 변환은 측정 구간 밖에서 끝낸다. flatten 비용이 섞이면 비교가 무의미해진다.
+        flat_pattern = flatten(pattern)
+        flat_filter = flatten(filter_matrix)
+
+        if not is_tie(mac(pattern, filter_matrix), mac_flat(flat_pattern, flat_filter)):
+            mismatched.append(n)
+
+        rows.append((n,
+                     measure_mac_ms(pattern, filter_matrix),
+                     measure_mac_flat_ms(flat_pattern, flat_filter)))
+
+    print_section(2, '최적화 전/후 비교 (평균/%d회)' % REPEAT)
+    print_compare_table(rows)
+    if mismatched:
+        print('\n경고: 크기 %s에서 두 방식의 점수가 다릅니다.' % mismatched)
+    else:
+        print('\n두 방식의 MAC 점수는 모든 크기에서 동일합니다 (|차이| < %g).' % EPSILON)
+
+
 def run_mode_json() -> None:
     """모드 2. data.json을 읽어 일괄 판정하고 성능·요약까지 출력한다"""
     print_section(1, '필터 로드')
@@ -564,6 +640,32 @@ def print_section(number: int, title: str) -> None:
     print(line)
 
 
+# 보너스 비교 표 컬럼 제목과 너비
+COMPARE_HEADERS = ('크기(N×N)', '2차원(ms)', '1차원(ms)', '변화', '연산 횟수(N²)')
+COMPARE_WIDTHS = (12, 13, 13, 11, 14)
+
+
+def print_compare_table(rows: List[Tuple[int, float, float]]) -> None:
+    """최적화 전/후 비교 표를 출력한다. rows는 (N, 2차원 ms, 1차원 ms) 목록"""
+    header = ''
+    for title, width in zip(COMPARE_HEADERS, COMPARE_WIDTHS):
+        header += _pad(title, width)
+    print(header)
+    print('-' * _display_width(header))
+
+    for n, ms_2d, ms_1d in rows:
+        if ms_2d > 0.0:
+            change = '%+.1f%%' % ((ms_1d / ms_2d - 1.0) * 100.0)
+        else:
+            change = '-'
+        line = _pad('%d×%d' % (n, n), COMPARE_WIDTHS[0])
+        line += _pad('%.4f' % ms_2d, COMPARE_WIDTHS[1] - 2, align_right=True) + '  '
+        line += _pad('%.4f' % ms_1d, COMPARE_WIDTHS[2] - 2, align_right=True) + '  '
+        line += _pad(change, COMPARE_WIDTHS[3] - 2, align_right=True) + '  '
+        line += _pad('%d' % (n * n), COMPARE_WIDTHS[4] - 2, align_right=True)
+        print(line)
+
+
 def print_case_result(result: Dict[str, Any]) -> None:
     """케이스 하나의 판정 결과를 출력한다"""
     print('\n--- %s ---' % result['case_id'])
@@ -604,6 +706,7 @@ def print_menu() -> None:
     print('\n[모드 선택]')
     print('%s. 사용자 입력 (%dx%d)' % (MENU_INPUT, MODE1_SIZE, MODE1_SIZE))
     print('%s. %s 분석' % (MENU_JSON, DATA_FILE))
+    print('%s. 최적화 비교 (보너스)' % MENU_OPTIMIZE)
     print('%s. 종료' % MENU_QUIT)
 
 
@@ -616,13 +719,15 @@ def main() -> None:
             run_mode_input()
         elif choice == MENU_JSON:
             run_mode_json()
+        elif choice == MENU_OPTIMIZE:
+            run_mode_optimize()
         elif choice == MENU_QUIT:
             print('프로그램을 종료합니다.')
             return
         else:
             # 잘못 골랐다고 프로그램을 끝내지 않는다. 안내만 하고 다시 묻는다.
-            print("'%s'은(는) 없는 선택지입니다. %s, %s, %s 중에서 고르세요."
-                  % (choice, MENU_INPUT, MENU_JSON, MENU_QUIT))
+            print("'%s'은(는) 없는 선택지입니다. %s, %s, %s, %s 중에서 고르세요."
+                  % (choice, MENU_INPUT, MENU_JSON, MENU_OPTIMIZE, MENU_QUIT))
 
 
 if __name__ == '__main__':
