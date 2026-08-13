@@ -342,8 +342,92 @@ def build_filters(raw_filters: Any) -> Tuple[Dict[str, Dict[str, Matrix]], List[
     return filters, report
 
 
+def run_case(case_id: str, case: Any, filters: Dict[str, Dict[str, Matrix]]) -> Dict[str, Any]:
+    """케이스 하나를 판정해 결과 dict를 반환한다. 어떤 경우에도 예외를 던지지 않는다"""
+    result: Dict[str, Any] = {
+        'case_id': case_id,
+        'ok': False,  # 스키마·크기 검증 통과 여부
+        'score_cross': None,
+        'score_x': None,
+        'predicted': None,
+        'expected': None,
+        'passed': False,
+        'reason': '',
+    }
+
+    n = extract_size(case_id)
+    if n is None:
+        result['reason'] = '케이스 키에서 크기를 읽을 수 없습니다.'
+        return result
+
+    size_key = 'size_%d' % n
+    pair = filters.get(size_key)
+    if pair is None:
+        result['reason'] = '%s 필터를 사용할 수 없습니다.' % size_key
+        return result
+
+    if not isinstance(case, dict):
+        result['reason'] = '케이스 항목이 객체가 아닙니다.'
+        return result
+    if 'input' not in case:
+        result['reason'] = 'input 항목이 없습니다.'
+        return result
+
+    valid, reason = validate_matrix(case['input'], n)
+    if not valid:
+        result['reason'] = '패턴이 %d×%d가 아닙니다 - %s' % (n, n, reason)
+        return result
+
+    # 크기 검증을 통과했으므로 이제 안전하게 계산할 수 있다.
+    result['ok'] = True
+    score_cross = mac(case['input'], pair[LABEL_CROSS])
+    score_x = mac(case['input'], pair[LABEL_X])
+    predicted = decide(score_cross, score_x)
+    expected = normalize_expected(case.get('expected'))
+
+    result['score_cross'] = score_cross
+    result['score_x'] = score_x
+    result['predicted'] = predicted
+    result['expected'] = expected
+    result['passed'] = is_correct(predicted, expected)
+
+    if not result['passed']:
+        if expected is None:
+            result['reason'] = ('expected 값 %r을(를) 표준 라벨로 해석할 수 없습니다.'
+                                % case.get('expected'))
+        elif predicted == LABEL_UNDECIDED:
+            result['reason'] = '동점(|차이| < %g)이라 판정할 수 없습니다.' % EPSILON
+        else:
+            result['reason'] = '판정 %s이(가) expected %s와(과) 다릅니다.' % (predicted, expected)
+    return result
+
+
+def run_cases(raw_patterns: Any,
+              filters: Dict[str, Dict[str, Matrix]]) -> List[Dict[str, Any]]:
+    """모든 케이스를 순회하며 결과 목록을 만든다"""
+    results: List[Dict[str, Any]] = []
+    if not isinstance(raw_patterns, dict):
+        return results
+
+    for case_id, case in raw_patterns.items():
+        try:
+            results.append(run_case(case_id, case, filters))
+        except Exception as error:
+            results.append({
+                'case_id': case_id,
+                'ok': False,
+                'score_cross': None,
+                'score_x': None,
+                'predicted': None,
+                'expected': None,
+                'passed': False,
+                'reason': '예상하지 못한 오류: %s: %s' % (type(error).__name__, error),
+            })
+    return results
+
+
 def run_mode_json() -> None:
-    """모드 2. data.json을 읽어 일괄 판정한다 (8~9단계에서 이어서 구현)"""
+    """모드 2. data.json을 읽어 일괄 판정한다 (9단계에서 성능·요약 추가)"""
     print_section(1, '필터 로드')
     data, reason = load_data(DATA_FILE)
     if data is None:
@@ -357,6 +441,14 @@ def run_mode_json() -> None:
     if not filters:
         print('\n사용할 수 있는 필터가 없어 분석을 중단합니다.')
         return
+
+    print_section(2, '패턴 분석 (라벨 정규화 적용)')
+    results = run_cases(data.get('patterns'), filters)
+    if not results:
+        print('분석할 패턴이 없습니다.')
+        return
+    for result in results:
+        print_case_result(result)
 
 
 # ---------------------------------------------------------------
@@ -408,6 +500,25 @@ def print_section(number: int, title: str) -> None:
     print('\n' + line)
     print('# [%d] %s' % (number, title))
     print(line)
+
+
+def print_case_result(result: Dict[str, Any]) -> None:
+    """케이스 하나의 판정 결과를 출력한다"""
+    print('\n--- %s ---' % result['case_id'])
+
+    if not result['ok']:
+        # 검증 단계에서 걸러진 케이스는 점수 자체가 없다.
+        print('FAIL (%s)' % result['reason'])
+        return
+
+    print('Cross 점수: %s' % result['score_cross'])
+    print('X 점수: %s' % result['score_x'])
+    expected_text = result['expected'] if result['expected'] is not None else '해석 불가'
+    verdict_line = '판정: %s | expected: %s | %s' % (
+        result['predicted'], expected_text, 'PASS' if result['passed'] else 'FAIL')
+    if not result['passed']:
+        verdict_line += ' (%s)' % result['reason']
+    print(verdict_line)
 
 
 def print_menu() -> None:
