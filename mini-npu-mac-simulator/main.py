@@ -6,7 +6,7 @@ MAC(Multiply-Accumulate) 연산으로 N×N 패턴이 Cross인지 X인지 판별�
 
 import json
 import time
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 Matrix = List[List[float]]
 
@@ -36,6 +36,28 @@ PERF_SIZES = [3, 5, 13, 25]
 # ---------------------------------------------------------------
 # [2] 라벨 정규화
 # ---------------------------------------------------------------
+
+# 원본 표기 → 표준 라벨 대응표.
+# 같은 'Cross'라도 expected는 '+'로, 필터 키는 'cross'로 적혀 있어 표를 따로 둔다.
+EXPECTED_LABELS = {'+': LABEL_CROSS, 'x': LABEL_X}
+FILTER_KEY_LABELS = {'cross': LABEL_CROSS, 'x': LABEL_X}
+
+
+def _lookup_label(raw: Any, table: Dict[str, str]) -> Optional[str]:
+    """대응표에서 표준 라벨을 찾는다. 문자열이 아니거나 표에 없으면 None을 반환"""
+    if not isinstance(raw, str):
+        return None
+    return table.get(raw.strip().lower())
+
+
+def normalize_expected(raw: Any) -> Optional[str]:
+    """data.json의 expected 값을 표준 라벨로 변환 ('+' → Cross, 'x' → X)"""
+    return _lookup_label(raw, EXPECTED_LABELS)
+
+
+def normalize_filter_key(raw: Any) -> Optional[str]:
+    """data.json의 필터 키를 표준 라벨로 변환 ('cross' → Cross, 'x' → X)"""
+    return _lookup_label(raw, FILTER_KEY_LABELS)
 
 
 # ---------------------------------------------------------------
