@@ -5,6 +5,7 @@ MAC(Multiply-Accumulate) 연산으로 N×N 패턴이 Cross인지 X인지 판별�
 """
 
 import json
+import math
 import time
 import unicodedata
 from typing import Any, Dict, List, Optional, Tuple
@@ -153,6 +154,71 @@ def generate_x(n: int) -> Matrix:
 # ---------------------------------------------------------------
 # [6] 입력 검증 및 행렬 입력
 # ---------------------------------------------------------------
+
+def parse_row(line: str, n: int) -> Tuple[Optional[List[float]], str]:
+    """줄단위 검증. 한 줄을 숫자 n개로 변환한다. 실패하면 (None, 사유)를 반환"""
+    tokens = line.split()
+    if len(tokens) != n:
+        return None, '입력 형식 오류: 각 줄에 %d개의 숫자를 공백으로 구분해 입력하세요.' % n
+
+    values = []
+    for token in tokens:
+        try:
+            value = float(token)
+        except ValueError:
+            return None, "입력 형식 오류: '%s'은(는) 숫자가 아닙니다." % token
+        # float()은 'nan'과 'inf'도 받아준다. 이 값들이 들어오면 점수 비교가
+        # 조용히 무너지므로(nan은 어떤 비교에도 False) 여기서 막는다.
+        if not math.isfinite(value):
+            return None, "입력 형식 오류: '%s'은(는) 사용할 수 없는 값입니다." % token
+        values.append(value)
+    return values, ''
+
+
+def validate_matrix(matrix: Any, n: int) -> Tuple[bool, str]:
+    """행렬 검증. n×n 숫자 행렬인지 검사한다. 아니면 (False, 사유)를 반환"""
+    if not isinstance(matrix, list):
+        return False, '2차원 배열이 아닙니다.'
+    if len(matrix) != n:
+        return False, '행 수가 %d이어야 하는데 %d입니다.' % (n, len(matrix))
+
+    for index, row in enumerate(matrix):
+        position = index + 1
+        if not isinstance(row, list):
+            return False, '%d번째 행이 배열이 아닙니다.' % position
+        if len(row) != n:
+            return False, '%d번째 행의 열 수가 %d이어야 하는데 %d입니다.' % (position, n, len(row))
+        for value in row:
+            # bool은 int의 하위 타입이라 isinstance(True, int)가 참이다.
+            # True/False가 1.0/0.0으로 조용히 계산되는 것을 막으려고 따로 걸러낸다.
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return False, '%d번째 행에 숫자가 아닌 값이 있습니다.' % position
+            if not math.isfinite(value):
+                return False, '%d번째 행에 사용할 수 없는 값(nan/inf)이 있습니다.' % position
+    return True, ''
+
+
+def _prompt(message: str) -> str:
+    """input() 래퍼. Ctrl+C / Ctrl+D를 안내 문구와 함께 정상 종료"""
+    try:
+        return input(message)
+    except (KeyboardInterrupt, EOFError):
+        print('\n입력이 중단되었습니다. 프로그램을 종료합니다.')
+        raise SystemExit(0)
+
+
+def read_matrix(title: str, n: int) -> Matrix:
+    """n×n 행렬을 한 줄씩 입력받는다. 올바른 줄만 쌓이므로 틀린 줄만 다시 묻는다"""
+    print(title)
+    matrix: Matrix = []
+    while len(matrix) < n:
+        line = _prompt('  [%d/%d] ' % (len(matrix) + 1, n))
+        values, reason = parse_row(line, n)
+        if values is None:
+            print('  ' + reason)
+            continue  # 실패한 줄은 쌓지 않으므로 같은 번호를 다시 묻게 된다
+        matrix.append(values)
+    return matrix
 
 
 # ---------------------------------------------------------------
