@@ -273,9 +273,90 @@ def run_mode_input() -> None:
     print_perf_table([(size, average_ms)])
 
 
+def load_data(path: str = DATA_FILE) -> Tuple[Optional[Dict[str, Any]], str]:
+    """JSON 파일을 읽어 (데이터, 사유)를 반환한다. 실패하면 데이터가 None"""
+    try:
+        with open(path, 'r', encoding='utf-8') as data_file:
+            data = json.load(data_file)
+    except FileNotFoundError:
+        return None, "'%s' 파일을 찾을 수 없습니다. 프로젝트 루트에 있는지 확인하세요." % path
+    except json.JSONDecodeError as error:
+        return None, "'%s' 파일이 올바른 JSON 형식이 아닙니다. (%s)" % (path, error)
+    except OSError as error:
+        return None, "'%s' 파일을 읽을 수 없습니다. (%s)" % (path, error)
+
+    if not isinstance(data, dict):
+        return None, "'%s'의 최상위 구조가 객체(중괄호)가 아닙니다." % path
+    return data, ''
+
+
+def extract_size(key: Any) -> Optional[int]:
+    """'size_13_2'나 'size_13' 같은 키에서 13을 뽑는다. 형식이 다르면 None"""
+    if not isinstance(key, str):
+        return None
+    parts = key.split('_')
+    if len(parts) < 2 or parts[0] != 'size' or not parts[1].isdigit():
+        return None
+    return int(parts[1])
+
+
+def build_filters(raw_filters: Any) -> Tuple[Dict[str, Dict[str, Matrix]], List[str]]:
+    """필터를 표준 라벨 키로 다시 담고, 로드 결과 안내 문구 목록을 함께 반환한다"""
+    filters: Dict[str, Dict[str, Matrix]] = {}
+    report: List[str] = []
+
+    if not isinstance(raw_filters, dict):
+        return filters, ['filters 항목이 없거나 객체가 아닙니다.']
+
+    for size_key, raw_pair in raw_filters.items():
+        n = extract_size(size_key)
+        if n is None:
+            report.append("✗ %s 건너뜀 (키에서 크기를 읽을 수 없습니다)" % size_key)
+            continue
+        if not isinstance(raw_pair, dict):
+            report.append('✗ %s 건너뜀 (필터 항목이 객체가 아닙니다)' % size_key)
+            continue
+
+        pair: Dict[str, Matrix] = {}
+        problem = ''
+        for raw_key, matrix in raw_pair.items():
+            label = normalize_filter_key(raw_key)
+            if label is None:
+                problem = "알 수 없는 필터 키 '%s'" % raw_key
+                break
+            valid, reason = validate_matrix(matrix, n)
+            if not valid:
+                problem = '%s 필터가 %d×%d가 아닙니다 - %s' % (label, n, n, reason)
+                break
+            pair[label] = matrix
+
+        if not problem and (LABEL_CROSS not in pair or LABEL_X not in pair):
+            problem = 'Cross와 X 필터가 모두 있어야 합니다'
+        if problem:
+            report.append('✗ %s 필터 로드 실패 (%s)' % (size_key, problem))
+            continue
+
+        filters[size_key] = pair
+        report.append('✓ %-8s 필터 로드 완료 (%s, %s)' % (size_key, LABEL_CROSS, LABEL_X))
+
+    return filters, report
+
+
 def run_mode_json() -> None:
-    """모드 2. data.json 일괄 분석 (7~9단계에서 구현)"""
-    print('data.json 분석 기능은 아직 구현 중입니다.')
+    """모드 2. data.json을 읽어 일괄 판정한다 (8~9단계에서 이어서 구현)"""
+    print_section(1, '필터 로드')
+    data, reason = load_data(DATA_FILE)
+    if data is None:
+        # 파일 자체를 못 읽으면 케이스 단위 처리가 의미 없다. 안내 후 메뉴로 돌아간다.
+        print(reason)
+        return
+
+    filters, report = build_filters(data.get('filters'))
+    for line in report:
+        print(line)
+    if not filters:
+        print('\n사용할 수 있는 필터가 없어 분석을 중단합니다.')
+        return
 
 
 # ---------------------------------------------------------------
