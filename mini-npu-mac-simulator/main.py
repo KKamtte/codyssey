@@ -25,6 +25,18 @@ LABEL_CROSS = 'Cross'
 LABEL_X = 'X'
 LABEL_UNDECIDED = 'UNDECIDED'
 
+# 모드 1은 사용자가 넣은 필터 두 개를 비교하므로 Cross/X가 아니라 A/B로 부른다.
+LABEL_A = 'A'
+LABEL_B = 'B'
+
+# 모드 1이 다루는 행렬 크기 (과제 지정: 3×3 고정)
+MODE1_SIZE = 3
+
+# 메뉴 선택지
+MENU_INPUT = '1'
+MENU_JSON = '2'
+MENU_QUIT = 'q'
+
 # 성능 측정 반복 횟수 (과제 최소 기준: 10회 반복 후 평균)
 REPEAT = 10
 
@@ -100,13 +112,19 @@ def is_tie(score_a: float, score_b: float) -> bool:
     return abs(score_a - score_b) < EPSILON
 
 
-def decide(score_cross: float, score_x: float) -> str:
-    """두 점수를 비교해 표준 라벨로 판정"""
-    if is_tie(score_cross, score_x):
+def compare_scores(score_first: float, score_second: float,
+                   label_first: str, label_second: str) -> str:
+    """점수가 높은 쪽의 라벨을 반환한다. 동점이면 LABEL_UNDECIDED"""
+    if is_tie(score_first, score_second):
         return LABEL_UNDECIDED
-    if score_cross > score_x:
-        return LABEL_CROSS
-    return LABEL_X
+    if score_first > score_second:
+        return label_first
+    return label_second
+
+
+def decide(score_cross: float, score_x: float) -> str:
+    """모드 2용 판정. 두 점수를 비교해 표준 라벨(Cross/X/UNDECIDED)로 반환"""
+    return compare_scores(score_cross, score_x, LABEL_CROSS, LABEL_X)
 
 
 def is_correct(predicted: str, expected: Optional[str]) -> bool:
@@ -212,7 +230,7 @@ def read_matrix(title: str, n: int) -> Matrix:
     print(title)
     matrix: Matrix = []
     while len(matrix) < n:
-        line = _prompt('  [%d/%d] ' % (len(matrix) + 1, n))
+        line = _prompt('')
         values, reason = parse_row(line, n)
         if values is None:
             print('  ' + reason)
@@ -224,6 +242,40 @@ def read_matrix(title: str, n: int) -> Matrix:
 # ---------------------------------------------------------------
 # [7] 모드 실행
 # ---------------------------------------------------------------
+
+def run_mode_input() -> None:
+    """모드 1. 3×3 필터 두 개와 패턴을 입력받아 MAC 점수로 판정한다"""
+    size = MODE1_SIZE
+
+    print_section(1, '필터 입력')
+    filter_a = read_matrix('필터 A (%d줄 입력, 공백 구분)' % size, size)
+    filter_b = read_matrix('필터 B (%d줄 입력, 공백 구분)' % size, size)
+
+    print_section(2, '패턴 입력')
+    pattern = read_matrix('패턴 (%d줄 입력, 공백 구분)' % size, size)
+
+    # 입력이 모두 끝난 뒤에 계산한다. 측정 구간에 입력 대기 시간이 섞이면 안 된다.
+    score_a = mac(pattern, filter_a)
+    score_b = mac(pattern, filter_b)
+    verdict = compare_scores(score_a, score_b, LABEL_A, LABEL_B)
+    average_ms = measure_mac_ms(pattern, filter_a)
+
+    print_section(3, 'MAC 결과')
+    print('A 점수: %s' % score_a)
+    print('B 점수: %s' % score_b)
+    print('연산 시간(평균/%d회): %.3f ms' % (REPEAT, average_ms))
+    if verdict == LABEL_UNDECIDED:
+        print('판정: 판정 불가 (|A-B| < %g)' % EPSILON)
+    else:
+        print('판정: %s' % verdict)
+
+    print_section(4, '성능 분석 (평균/%d회)' % REPEAT)
+    print_perf_table([(size, average_ms)])
+
+
+def run_mode_json() -> None:
+    """모드 2. data.json 일괄 분석 (7~9단계에서 구현)"""
+    print('data.json 분석 기능은 아직 구현 중입니다.')
 
 
 # ---------------------------------------------------------------
@@ -269,8 +321,37 @@ def print_perf_table(rows: List[Tuple[int, float]]) -> None:
         print(line)
 
 
+def print_section(number: int, title: str) -> None:
+    """구획 머리말을 출력한다"""
+    line = '#' + '-' * 40
+    print('\n' + line)
+    print('# [%d] %s' % (number, title))
+    print(line)
+
+
+def print_menu() -> None:
+    print('\n[모드 선택]')
+    print('%s. 사용자 입력 (%dx%d)' % (MENU_INPUT, MODE1_SIZE, MODE1_SIZE))
+    print('%s. %s 분석' % (MENU_JSON, DATA_FILE))
+    print('%s. 종료' % MENU_QUIT)
+
+
 def main() -> None:
     print('=== Mini NPU Simulator ===')
+    while True:
+        print_menu()
+        choice = _prompt('선택: ').strip().lower()
+        if choice == MENU_INPUT:
+            run_mode_input()
+        elif choice == MENU_JSON:
+            run_mode_json()
+        elif choice == MENU_QUIT:
+            print('프로그램을 종료합니다.')
+            return
+        else:
+            # 잘못 골랐다고 프로그램을 끝내지 않는다. 안내만 하고 다시 묻는다.
+            print("'%s'은(는) 없는 선택지입니다. %s, %s, %s 중에서 고르세요."
+                  % (choice, MENU_INPUT, MENU_JSON, MENU_QUIT))
 
 
 if __name__ == '__main__':
