@@ -426,8 +426,50 @@ def run_cases(raw_patterns: Any,
     return results
 
 
+def collect_perf_inputs(n: int, filters: Dict[str, Dict[str, Matrix]],
+                        raw_patterns: Any) -> Tuple[Matrix, Matrix, bool]:
+    """크기 n의 성능 측정에 쓸 (패턴, 필터, 생성기 사용 여부)를 고른다"""
+    pair = filters.get('size_%d' % n)
+    if pair is not None:
+        filter_matrix = pair[LABEL_CROSS]
+        if isinstance(raw_patterns, dict):
+            for case_id, case in raw_patterns.items():
+                if extract_size(case_id) != n or not isinstance(case, dict):
+                    continue
+                valid, _ = validate_matrix(case.get('input'), n)
+                if valid:
+                    return case['input'], filter_matrix, False
+        # 필터는 있는데 쓸 만한 패턴이 없으면 패턴만 생성한다.
+        return generate_cross(n), filter_matrix, True
+    return generate_cross(n), generate_x(n), True
+
+
+def build_perf_rows(filters: Dict[str, Dict[str, Matrix]],
+                    raw_patterns: Any) -> Tuple[List[Tuple[int, float]], List[int]]:
+    """크기별 평균 시간을 재서 (표 행 목록, 생성기를 쓴 크기 목록)를 반환한다"""
+    rows: List[Tuple[int, float]] = []
+    generated_sizes: List[int] = []
+    for n in PERF_SIZES:
+        # 행렬 준비는 측정 구간 밖에서 끝낸다.
+        pattern, filter_matrix, generated = collect_perf_inputs(n, filters, raw_patterns)
+        if generated:
+            generated_sizes.append(n)
+        rows.append((n, measure_mac_ms(pattern, filter_matrix)))
+    return rows, generated_sizes
+
+
+def summarize(results: List[Dict[str, Any]]) -> Tuple[int, int, int]:
+    """(전체, 통과, 실패) 개수를 센다"""
+    total = len(results)
+    passed = 0
+    for result in results:
+        if result['passed']:
+            passed += 1
+    return total, passed, total - passed
+
+
 def run_mode_json() -> None:
-    """모드 2. data.json을 읽어 일괄 판정한다 (9단계에서 성능·요약 추가)"""
+    """모드 2. data.json을 읽어 일괄 판정하고 성능·요약까지 출력한다"""
     print_section(1, '필터 로드')
     data, reason = load_data(DATA_FILE)
     if data is None:
@@ -449,6 +491,19 @@ def run_mode_json() -> None:
         return
     for result in results:
         print_case_result(result)
+
+    print_section(3, '성능 분석 (평균/%d회)' % REPEAT)
+    rows, generated_sizes = build_perf_rows(filters, data.get('patterns'))
+    print_perf_table(rows)
+    if generated_sizes:
+        labels = ''
+        for n in generated_sizes:
+            labels += '%d×%d ' % (n, n)
+        print('\n* %s크기는 %s에 데이터가 없어 생성기로 만든 패턴으로 측정했습니다.'
+              % (labels, DATA_FILE))
+
+    print_section(4, '결과 요약')
+    print_summary(results)
 
 
 # ---------------------------------------------------------------
@@ -519,6 +574,23 @@ def print_case_result(result: Dict[str, Any]) -> None:
     if not result['passed']:
         verdict_line += ' (%s)' % result['reason']
     print(verdict_line)
+
+
+def print_summary(results: List[Dict[str, Any]]) -> None:
+    """전체/통과/실패 개수와 실패 케이스 목록을 출력한다"""
+    total, passed, failed = summarize(results)
+    print('총 테스트: %d개' % total)
+    print('통과: %d개' % passed)
+    print('실패: %d개' % failed)
+
+    if failed == 0:
+        return
+    print('\n실패 케이스:')
+    for result in results:
+        if not result['passed']:
+            # 사유는 케이스 결과에 담아둔 문자열을 그대로 쓴다.
+            # 콘솔 요약과 README 원인 분석이 같은 문장을 근거로 삼게 하기 위함이다.
+            print('- %s: %s' % (result['case_id'], result['reason']))
 
 
 def print_menu() -> None:
