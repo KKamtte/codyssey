@@ -6,6 +6,9 @@ MAC(Multiply-Accumulate) 연산으로 N×N 패턴이 Cross인지 X인지 판별�
 
 import json
 import time
+from typing import List, Optional, Tuple
+
+Matrix = List[List[float]]
 
 
 # ---------------------------------------------------------------
@@ -39,10 +42,42 @@ PERF_SIZES = [3, 5, 13, 25]
 # [3] MAC 연산
 # ---------------------------------------------------------------
 
+def mac(pattern: Matrix, filter_matrix: Matrix) -> float:
+    """패턴과 필터의 MAC(Multiply-Accumulate) 점수를 반환"""
+    total = 0.0
+    n = len(pattern)
+    for row in range(n):
+        for col in range(n):
+            product = pattern[row][col] * filter_matrix[row][col]  # Multiply
+            total = total + product  # Accumulate
+    return total
+
 
 # ---------------------------------------------------------------
 # [4] 점수 비교 및 판정
 # ---------------------------------------------------------------
+
+def is_tie(score_a: float, score_b: float) -> bool:
+    """두 점수를 동점으로 볼지 판단하여, 차이가 EPSILON보다 작으면 같은 값으로 판단"""
+    return abs(score_a - score_b) < EPSILON
+
+
+def decide(score_cross: float, score_x: float) -> str:
+    """두 점수를 비교해 표준 라벨로 판정"""
+    if is_tie(score_cross, score_x):
+        return LABEL_UNDECIDED
+    if score_cross > score_x:
+        return LABEL_CROSS
+    return LABEL_X
+
+
+def is_correct(predicted: str, expected: Optional[str]) -> bool:
+    """판정한 라벨이 기대 라벨과 일치하면 True(PASS), 아니면 False(FAIL)를 반환"""
+    if predicted == LABEL_UNDECIDED:  # 판정 자체를 못 했으므로 정답일 수 없음
+        return False
+    if expected is None:  # 기대 라벨 정규화에 실패한 경우 비교 대상이 없음
+        return False
+    return predicted == expected
 
 
 # ---------------------------------------------------------------
@@ -59,7 +94,7 @@ PERF_SIZES = [3, 5, 13, 25]
 # [7] 출력 및 진입점
 # ---------------------------------------------------------------
 
-def main():
+def main() -> None:
     print('=== Mini NPU Simulator ===')
 
 
