@@ -21,8 +21,7 @@ AI 도구 학습 과제 코드는 B1-1 ~ B7-2 (15개). 목록은 과제 레포 R
 
 - https://github.com/KKamtte/codyssey (공개)
 - 구조: `00-onboarding/` → `01-ai-tools/B1-web-frontend/B1-1-.../` 처럼 단계 → 분야 → 과제
-- 폴더명 영문 kebab-case, 과제 코드는 `B1-1` 표기 유지, 과제 폴더는 시작할 때 만든다.
-- 이 위키도 같은 레포의 `wiki/`에 있다. PR 없이 `main`에 push (미션은 작업 브랜치 → merge 커밋).
+- 이 위키도 같은 레포의 `wiki/`에 있다. 폴더 규칙, 미션 진행 절차, Git 운영은 [[AGENTS]] 참고.
 
 ## 학칙에서 알아둘 것 (2026.5.21 판 기준, 요약)
 
@@ -34,3 +33,4 @@ AI 도구 학습 과제 코드는 B1-1 ~ B7-2 (15개). 목록은 과제 레포 R
 
 - 플랫폼: https://usr.codyssey.kr/main/
 - [[review-quiz]]: push 전 문답 방식 계획
+- [[b1-1]]: B1-1 작업 계획

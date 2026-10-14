@@ -6,7 +6,7 @@ status: open
 ---
 
 과제 변경을 push하기 전에 Claude가 변경 코드를 보고 질문을 내고, 내가 답하는 방식. 동료 평가 예행연습 겸 학습 기록.
-레포는 PR 없이 `main` 바로 push로 운영하므로 "PR 전"이 아니라 "push 전"에 한다.
+PR을 쓰지 않으므로 "PR 전"이 아니라 "push 전"에 한다 (Git 운영은 [[AGENTS]]).
 
 ## 검토한 선택지
 
@@ -24,12 +24,12 @@ status: open
 
 - [ ] 개인 Claude 계정(구독 여부, 한도)으로 Claude Code CLI 로그인 확인
 - [ ] 집 PC에 클론: `git clone git@github.com:KKamtte/codyssey.git` 후 Claude Code에서 규칙(`AGENTS.md`)을 읽는지 확인
-- [ ] 모바일 앱 Claude Code에서 `KKamtte/codyssey` 레포 연결, 브랜치가 아니라 `main`에 바로 push 되는지 확인
+- [ ] 모바일 앱 Claude Code에서 `KKamtte/codyssey` 레포 연결, `AGENTS.md` Git 규칙대로 동작하는지 확인 (모바일은 자체 브랜치를 만들 수 있음)
 - [ ] 방식 B: `/quiz` 스킬을 레포 안(`.claude/skills/`)에 둘지, 개인 전역(`~/.claude/skills/`)에 둘지 결정. 레포 안이면 모바일에서도 같이 쓰임. 단 지금 `.gitignore`가 `.claude`를 통째로 제외하므로 `!.claude/skills/` 예외 추가 필요
 - [ ] 문답 기록 위치 결정: 과제 폴더 `review-qa.md` / `wiki/analyses/` / 둘 다
 - [ ] (선택) 방식 A가 필요하면 개인 계정 기준 비용 확인 후 결정
 
 ## 이어서 할 일
 
-- [ ] codyssey B1-1 과제 시작: `01-ai-tools/B1-web-frontend/B1-1-self-intro-page/`
+- [x] codyssey B1-1 과제 시작 (2026-10-14) → [[b1-1]]
 - [ ] 「동료 평가 규칙」 문서 읽고 [[codyssey]]에 요약
