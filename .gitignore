@@ -212,3 +212,9 @@ poetry.toml
 pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,macos
+
+### CODYSSEY ###
+# 과제 원문(미션)은 로컬에만 둔다 (공개 레포, 요약은 각 과제 README)
+MISSION.md
+# Obsidian 은 읽기용 로컬 설정
+.obsidian/
