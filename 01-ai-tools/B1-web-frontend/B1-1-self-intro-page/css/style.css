@@ -610,6 +610,12 @@ ol {
   resize: vertical;
 }
 
+/* 검증에 실패한 칸은 테두리를 에러 색으로 */
+.form__field input[aria-invalid="true"],
+.form__field textarea[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
 .form__error {
   min-height: 1.25rem;
   margin: 0.25rem 0 0;

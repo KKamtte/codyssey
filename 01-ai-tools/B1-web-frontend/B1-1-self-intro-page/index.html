@@ -128,17 +128,17 @@
       <form class="contact__form" novalidate>
         <div class="form__field">
           <label for="contact-name">이름</label>
-          <input id="contact-name" name="name" type="text" autocomplete="name">
+          <input id="contact-name" name="name" type="text" autocomplete="name" aria-describedby="contact-name-error">
           <p class="form__error" id="contact-name-error" aria-live="polite"></p>
         </div>
         <div class="form__field">
           <label for="contact-email">이메일</label>
-          <input id="contact-email" name="email" type="email" autocomplete="email">
+          <input id="contact-email" name="email" type="email" autocomplete="email" aria-describedby="contact-email-error">
           <p class="form__error" id="contact-email-error" aria-live="polite"></p>
         </div>
         <div class="form__field">
           <label for="contact-message">메시지</label>
-          <textarea id="contact-message" name="message" rows="5"></textarea>
+          <textarea id="contact-message" name="message" rows="5" aria-describedby="contact-message-error"></textarea>
           <p class="form__error" id="contact-message-error" aria-live="polite"></p>
         </div>
         <button class="btn btn--primary" type="submit">Send</button>

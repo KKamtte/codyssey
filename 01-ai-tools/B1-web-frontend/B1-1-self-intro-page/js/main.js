@@ -224,3 +224,60 @@ async function loadProjects() {
 }
 
 loadProjects();
+
+// ---------- Contact 폼 검증 ----------
+// 입력값 → 검증 결과(에러 메시지) → 칸 아래 메시지 표시/숨김.
+// 처음에는 제출할 때 검사하고, 한 번 에러가 난 칸은 입력할 때마다(input) 다시 검사해 고치는 즉시 메시지가 사라진다.
+const contactForm = document.querySelector('.contact__form');
+const formSuccess = document.querySelector('.form__success');
+// 이메일 형식: 공백 없는 글자@공백 없는 글자.공백 없는 글자 (예: name@example.com)
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validators = {
+  name: (value) => (value ? '' : '이름을 입력해 주세요.'),
+  email: (value) => {
+    if (!value) return '이메일을 입력해 주세요.';
+    if (!EMAIL_PATTERN.test(value)) return '이메일 형식이 올바르지 않습니다. (예: name@example.com)';
+    return '';
+  },
+  message: (value) => (value ? '' : '메시지를 입력해 주세요.'),
+};
+
+function validateField(field) {
+  const errorMessage = validators[field.name](field.value.trim());
+  const errorElement = document.getElementById(`${field.id}-error`);
+  errorElement.textContent = errorMessage;
+  field.setAttribute('aria-invalid', String(errorMessage !== ''));
+  return errorMessage === '';
+}
+
+const formFields = [...contactForm.elements].filter((element) => element.name in validators);
+
+formFields.forEach((field) => {
+  field.addEventListener('input', () => {
+    formSuccess.textContent = '';
+    if (field.getAttribute('aria-invalid') === 'true') {
+      validateField(field);
+    }
+  });
+});
+
+contactForm.addEventListener('submit', (event) => {
+  event.preventDefault(); // 페이지 새로고침(기본 제출)을 막는다
+
+  // every 를 쓰면 첫 에러에서 멈추므로, map 으로 모든 칸을 검사해 에러를 한 번에 보여준다
+  const results = formFields.map(validateField);
+  const isValid = results.every(Boolean);
+
+  if (!isValid) {
+    formSuccess.textContent = '';
+    formFields[results.indexOf(false)].focus(); // 첫 번째 에러 칸으로 이동
+    return;
+  }
+
+  const name = contactForm.elements.name.value.trim();
+  // 실제 전송 기능은 없으므로(보너스 항목), 방문자가 오해하지 않게 그대로 알린다
+  formSuccess.textContent = `${name}님, 감사합니다! 입력이 확인되었습니다. 지금은 데모 폼이라 실제로 전송되지는 않으니, 급한 연락은 이메일로 부탁드립니다.`;
+  contactForm.reset();
+  formFields.forEach((field) => field.removeAttribute('aria-invalid'));
+});
