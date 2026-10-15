@@ -119,10 +119,28 @@ B1-1-self-intro-page/
 - **Flexbox와 Grid 구분**: 한 줄로 늘어놓는 것(네비, 버튼 묶음, 기술 칩)은 Flexbox,
   카드 목록(성과 카드, 기술 분류, 프로젝트)은 Grid `repeat(auto-fill/auto-fit, minmax(...))`로 화면 폭에 따라 열 수가 바뀐다.
   성과 카드는 `auto-fill`로 두어 카드가 하나뿐일 때 한 줄을 다 차지하지 않게 했다.
+- **Hero 높이**: 화면 전체(100vh)를 채우지 않고 내용 높이만 쓴다. 첫 화면에서 About이 바로 이어 보여 아래에 내용이 더 있다는 것이 드러난다.
+  CTA 버튼(View Projects / Contact)은 과제 필수 요소라 유지한다.
 - **고정 헤더와 앵커**: 헤더를 `position: fixed`로 두고 `scroll-padding-top`으로 앵커 이동 시 제목이 가려지지 않게 했다.
-- **상태 클래스**: 메뉴 펼침(`.is-open`), 맨 위로 버튼 표시(`.is-visible`)는 CSS에 미리 정의하고 JS는 클래스만 붙인다 (a-3).
+- **상태 클래스**: 메뉴 펼침(`.active`), 네비 배경(`.is-scrolled`), 맨 위로 버튼(`.is-visible`), 나타나기(`.reveal`)는
+  CSS에 모양을 정의하고 JS는 `classList`로 클래스만 붙이고 뗀다. 모양과 동작을 나눠 두면 디자인을 바꿀 때 JS를 건드리지 않는다.
+- **햄버거 메뉴**: `classList.toggle('active')`로 열고 닫고, `aria-expanded`도 같이 바꿔 화면 낭독기에 열림 상태를 알린다.
+  메뉴 항목을 누르면 이동과 함께 메뉴를 닫는다.
+- **부드러운 스크롤**: CSS `scroll-behavior` 대신 JS에서 `event.preventDefault()`로 앵커 점프를 막고 `scrollIntoView({ behavior: 'smooth' })`로 이동한다.
+  주소창 해시는 `history.pushState`로 맞춘다. 운영체제의 "동작 줄이기"를 켠 사용자에게는 애니메이션 없이 바로 이동한다.
+- **스크롤 애니메이션**: Intersection Observer로 섹션이 보이면 한 번만 나타나게 하고 관찰을 끊는다(`unobserve`).
+  숨김 클래스(`.reveal`)를 JS가 붙이므로 JS가 실패해도 내용은 보인다.
 
-(기준값, 배포 URL은 이후 단계에서 채운다)
+### 기준값
+
+| 항목 | 값 | 위치 |
+|---|---|---|
+| 맨 위로 버튼 표시 | 스크롤 300px 이상 | `js/main.js` `SCROLL_TOP_OFFSET` |
+| 네비게이션 배경 변경 | 스크롤 60px 이상 | `js/main.js` `HEADER_SCROLL_OFFSET` |
+| 스크롤 애니메이션 threshold | 0.2 (섹션 20%가 보이면) | `js/main.js` `REVEAL_THRESHOLD` |
+| 브레이크포인트 | 768px, 1024px | `css/style.css` |
+
+(배포 URL은 이후 단계에서 채운다)
 
 ## 회고
 
