@@ -115,3 +115,112 @@ if ('IntersectionObserver' in window) {
     observer.observe(section);
   });
 }
+
+// ---------- Projects: GitHub API ----------
+// 상태(projectsState)를 바꾸고 renderProjects() 로 화면을 다시 그린다.
+// 상태: loading(불러오는 중) → success(카드) / empty(보여줄 것 없음) / error(실패 + 다시 시도)
+const GITHUB_USER = 'KKamtte';
+const REPOS_URL = `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=updated`;
+// 결과물로 볼 수 있는 저장소만 고른다 (wiki/plans/b1-1.md 결정 사항 5)
+const FEATURED_REPOS = ['library-search', 'spring-playground', 'nest_study'];
+
+const projectsStatus = document.querySelector('.projects__status');
+const projectsGrid = document.querySelector('.projects__grid');
+
+const projectsState = {
+  status: 'loading',
+  repos: [],
+  errorMessage: '',
+};
+
+function setProjectsState(nextState) {
+  Object.assign(projectsState, nextState);
+  renderProjects();
+}
+
+// API 에서 온 글자를 innerHTML 에 넣기 전에 HTML 로 해석되지 않게 바꾼다
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function formatDate(isoString) {
+  return new Date(isoString).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function createRepoCard({ name, html_url, description, language, stargazers_count, pushed_at }) {
+  return `
+    <article class="project-card">
+      <h3 class="project-card__title">
+        <a href="${escapeHtml(html_url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(name)}</a>
+      </h3>
+      <p class="project-card__desc">${description ? escapeHtml(description) : '설명이 아직 없습니다.'}</p>
+      <ul class="project-card__meta">
+        ${language ? `<li class="project-card__lang">${escapeHtml(language)}</li>` : ''}
+        <li aria-label="스타 ${stargazers_count}개">★ ${stargazers_count}</li>
+        <li>최근 수정 <time datetime="${escapeHtml(pushed_at)}">${formatDate(pushed_at)}</time></li>
+      </ul>
+    </article>
+  `;
+}
+
+function renderProjects() {
+  const { status, repos, errorMessage } = projectsState;
+  projectsGrid.innerHTML = '';
+
+  if (status === 'loading') {
+    projectsStatus.innerHTML = '<div class="spinner" aria-hidden="true"></div><p>로딩 중...</p>';
+    return;
+  }
+
+  if (status === 'error') {
+    projectsStatus.innerHTML = `
+      <p>프로젝트를 불러올 수 없습니다.</p>
+      <p class="projects__error-detail">${escapeHtml(errorMessage)}</p>
+      <button class="btn btn--secondary projects__retry" type="button">다시 시도</button>
+    `;
+    projectsStatus.querySelector('.projects__retry').addEventListener('click', loadProjects);
+    return;
+  }
+
+  if (status === 'empty') {
+    projectsStatus.innerHTML = '<p>표시할 프로젝트가 없습니다.</p>';
+    return;
+  }
+
+  projectsStatus.innerHTML = '';
+  projectsGrid.innerHTML = repos.map(createRepoCard).join('');
+}
+
+async function loadProjects() {
+  setProjectsState({ status: 'loading', repos: [], errorMessage: '' });
+
+  try {
+    const response = await fetch(REPOS_URL);
+
+    // 인증 없는 호출은 시간당 60회 제한이 있고, 넘으면 403 이 온다
+    if (response.status === 403) {
+      throw new Error('GitHub API 요청 한도를 넘었습니다. 잠시 후 다시 시도해 주세요.');
+    }
+    if (!response.ok) {
+      throw new Error(`GitHub API 응답 오류 (${response.status})`);
+    }
+
+    const allRepos = await response.json();
+    const repos = allRepos
+      .filter((repo) => FEATURED_REPOS.includes(repo.name))
+      .sort((a, b) => new Date(b.pushed_at) - new Date(a.pushed_at));
+
+    setProjectsState({ status: repos.length > 0 ? 'success' : 'empty', repos });
+  } catch (error) {
+    // 네트워크가 끊긴 경우 fetch 자체가 TypeError 로 실패한다
+    const message = error instanceof TypeError ? '네트워크 연결을 확인해 주세요.' : error.message;
+    setProjectsState({ status: 'error', errorMessage: message });
+  }
+}
+
+loadProjects();

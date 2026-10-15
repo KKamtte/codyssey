@@ -139,6 +139,14 @@ B1-1-self-intro-page/
   저장값을 읽어 적용하는 작은 `theme-init.js`만 `<head>`에서 `defer` 없이 먼저 실행한다.
 - **토글 버튼 접근성**: 아이콘(🌙/☀️)만 있는 버튼이라 `aria-label`로 "다크 모드로 전환" 등 동작을 알리고, `aria-pressed`로 켜짐 상태를 알린다.
 
+- **Projects 상태 관리**: `projectsState`(`status`, `repos`, `errorMessage`)를 `setProjectsState()`로만 바꾸고, 바꿀 때마다 `renderProjects()`가 상태에 맞는 화면을 그린다.
+  상태는 `loading`(스피너 + "로딩 중...") → `success`(카드) / `empty`("표시할 프로젝트가 없습니다") / `error`("프로젝트를 불러올 수 없습니다" + 다시 시도) 네 가지다.
+- **API 호출**: `fetch` + `async/await`, `try...catch`로 실패를 잡는다. `response.ok`가 아니면 직접 `throw`해 같은 에러 처리로 보낸다.
+  인증 없는 호출은 시간당 60회 제한이 있어 넘으면 403이 오므로 따로 안내 문구를 보여 준다. 네트워크가 끊기면 `fetch`가 `TypeError`로 실패하는 것을 구분했다.
+- **보여줄 저장소**: 전체 공개 저장소 중 결과물로 볼 수 있는 3개(`library-search`, `spring-playground`, `nest_study`)만 `filter`로 고르고 최근 push 순으로 `sort`한다.
+- **카드 생성**: 구조분해 할당으로 필요한 값만 꺼내 템플릿 리터럴로 카드 HTML을 만들고 `map` + `join`으로 붙인다.
+  저장소 설명 같은 외부 데이터는 `innerHTML`에 넣기 전에 `escapeHtml()`로 `<`, `>` 등을 바꿔 HTML로 해석되지 않게 했다.
+
 ### 기준값
 
 | 항목 | 값 | 위치 |
