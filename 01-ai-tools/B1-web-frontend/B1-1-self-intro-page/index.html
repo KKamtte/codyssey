@@ -36,7 +36,11 @@
     <section class="hero" id="hero" aria-labelledby="hero-title">
       <p class="hero__greeting">Hello!</p>
       <h1 class="hero__title" id="hero-title">I am <span class="hero__name">김승현</span>.</h1>
-      <p class="hero__lead">데이터의 무결성과 시스템의 본질을 고민하는 백엔드 개발자입니다.</p>
+      <p class="hero__lead">
+        <!-- 화면 낭독기는 전체 문장을 한 번에 읽고, 타이핑 효과는 화면에만 보인다 (보너스) -->
+        <span class="sr-only">데이터의 무결성과 시스템의 본질을 고민하는 백엔드 개발자입니다.</span>
+        <span class="hero__typing" aria-hidden="true">데이터의 무결성과 시스템의 본질을 고민하는 백엔드 개발자입니다.</span>
+      </p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#projects">View Projects</a>
         <a class="btn btn--secondary" href="#contact">Contact</a>
@@ -168,6 +172,8 @@
       <h2 class="section__title" id="projects-title">Projects</h2>
       <p class="projects__desc">GitHub API로 불러온 저장소 중 결과물로 볼 수 있는 것을 골라 보여줍니다.</p>
       <!-- 로딩/성공/에러/빈 상태는 js/main.js 가 이 영역에 렌더링한다 (a-5) -->
+      <!-- 언어별 필터 버튼은 불러온 저장소의 언어로 만든다 (보너스) -->
+      <div class="projects__filters" role="group" aria-label="언어별 필터"></div>
       <div class="projects__status" aria-live="polite"></div>
       <div class="projects__grid"></div>
     </section>

@@ -51,6 +51,21 @@ themeToggle.addEventListener('click', () => {
 
 applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'); // 버튼 아이콘을 현재 테마에 맞춘다
 
+// 시스템 다크 모드 감지 (보너스): 토글로 직접 고른 적이 없으면 운영체제 설정이 바뀔 때 따라간다
+function hasSavedTheme() {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY) !== null;
+  } catch (error) {
+    return false;
+  }
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+  if (!hasSavedTheme()) {
+    applyTheme(event.matches ? 'dark' : 'light');
+  }
+});
+
 // ---------- 햄버거 메뉴 ----------
 function setMenuOpen(isOpen) {
   navMenu.classList.toggle('active', isOpen);
@@ -97,6 +112,26 @@ scrollTopButton.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
 });
 
+// ---------- 타이핑 효과 (보너스) ----------
+// Hero 소개 문장을 한 글자씩 보여준다. 움직임 줄이기를 켠 사용자에게는 문장을 바로 보여준다.
+const TYPING_DELAY = 60; // 글자 사이 간격(ms)
+const typingTarget = document.querySelector('.hero__typing');
+
+function typeText(element, text, index = 0) {
+  element.textContent = text.slice(0, index);
+  if (index < text.length) {
+    setTimeout(() => typeText(element, text, index + 1), TYPING_DELAY);
+  } else {
+    element.classList.add('is-done');
+  }
+}
+
+if (prefersReducedMotion.matches) {
+  typingTarget.classList.add('is-done');
+} else {
+  typeText(typingTarget, typingTarget.textContent.trim());
+}
+
 // ---------- 스크롤 애니메이션 (Intersection Observer) ----------
 // Hero 는 처음부터 보이므로 제외하고, 나머지 섹션이 화면에 들어오면 한 번만 나타나게 한다.
 const revealTargets = document.querySelectorAll('main .section');
@@ -124,13 +159,17 @@ const REPOS_URL = `https://api.github.com/users/${GITHUB_USER}/repos?per_page=10
 // 결과물로 볼 수 있는 저장소만 고른다 (wiki/plans/b1-1.md 결정 사항 5)
 const FEATURED_REPOS = ['library-search', 'spring-playground', 'nest_study'];
 
+const projectsFilters = document.querySelector('.projects__filters');
 const projectsStatus = document.querySelector('.projects__status');
 const projectsGrid = document.querySelector('.projects__grid');
+
+const ALL_LANGUAGES = 'All';
 
 const projectsState = {
   status: 'loading',
   repos: [],
   errorMessage: '',
+  activeLanguage: ALL_LANGUAGES, // 언어별 필터 (보너스)
 };
 
 function setProjectsState(nextState) {
@@ -168,9 +207,33 @@ function createRepoCard({ name, html_url, description, language, stargazers_coun
   `;
 }
 
+// 불러온 저장소의 언어로 필터 버튼을 만든다. 버튼 클릭 → activeLanguage 변경 → 목록 다시 그리기
+function renderFilters() {
+  const { status, repos, activeLanguage } = projectsState;
+  if (status !== 'success') {
+    projectsFilters.innerHTML = '';
+    return;
+  }
+
+  const languages = [ALL_LANGUAGES, ...new Set(repos.map((repo) => repo.language).filter(Boolean))];
+  projectsFilters.innerHTML = languages
+    .map((language) => `
+      <button class="filter-btn" type="button" data-language="${escapeHtml(language)}"
+        aria-pressed="${language === activeLanguage}">${escapeHtml(language)}</button>
+    `)
+    .join('');
+}
+
+projectsFilters.addEventListener('click', (event) => {
+  const button = event.target.closest('.filter-btn');
+  if (!button) return;
+  setProjectsState({ activeLanguage: button.dataset.language });
+});
+
 function renderProjects() {
-  const { status, repos, errorMessage } = projectsState;
+  const { status, repos, errorMessage, activeLanguage } = projectsState;
   projectsGrid.innerHTML = '';
+  renderFilters();
 
   if (status === 'loading') {
     projectsStatus.innerHTML = '<div class="spinner" aria-hidden="true"></div><p>로딩 중...</p>';
@@ -192,12 +255,16 @@ function renderProjects() {
     return;
   }
 
+  const visibleRepos = activeLanguage === ALL_LANGUAGES
+    ? repos
+    : repos.filter((repo) => repo.language === activeLanguage);
+
   projectsStatus.innerHTML = '';
-  projectsGrid.innerHTML = repos.map(createRepoCard).join('');
+  projectsGrid.innerHTML = visibleRepos.map(createRepoCard).join('');
 }
 
 async function loadProjects() {
-  setProjectsState({ status: 'loading', repos: [], errorMessage: '' });
+  setProjectsState({ status: 'loading', repos: [], errorMessage: '', activeLanguage: ALL_LANGUAGES });
 
   try {
     const response = await fetch(REPOS_URL);
@@ -276,7 +343,7 @@ contactForm.addEventListener('submit', (event) => {
   }
 
   const name = contactForm.elements.name.value.trim();
-  // 실제 전송 기능은 없으므로(보너스 항목), 방문자가 오해하지 않게 그대로 알린다
+  // 실제 전송 기능은 없으므로, 방문자가 오해하지 않게 그대로 알린다
   formSuccess.textContent = `${name}님, 감사합니다! 입력이 확인되었습니다. 지금은 데모 폼이라 실제로 전송되지는 않으니, 급한 연락은 이메일로 부탁드립니다.`;
   contactForm.reset();
   formFields.forEach((field) => field.removeAttribute('aria-invalid'));

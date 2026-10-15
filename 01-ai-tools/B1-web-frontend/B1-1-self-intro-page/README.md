@@ -13,52 +13,52 @@ GitHub API로 내 저장소 목록을 불러와 로딩/성공/에러/빈 상태�
 ## 요구사항
 
 ### 구성
-- [ ] 폴더 분리: `index.html`, `css/`, `js/`, `images/`
-- [ ] 외부 CSS(`css/style.css`), JS 연결 (JS는 `defer`)
+- [x] 폴더 분리: `index.html`, `css/`, `js/`, `images/`
+- [x] 외부 CSS(`css/style.css`), JS 연결 (JS는 `defer`)
 - [ ] VS Code + Live Server 개발 환경
 
 ### HTML
-- [ ] 시맨틱 태그 사용: `header`, `nav`, `main`, `section`, `article`, `footer`
-- [ ] 섹션: Hero(인사, CTA) / About(소개, 프로필 사진) / Skills / Projects(GitHub 카드) / Contact(폼) / Footer(저작권, 소셜)
-- [ ] 네비게이션 앵커 링크로 각 섹션 이동
-- [ ] 모든 이미지에 의미 있는 `alt`
-- [ ] 폼 `label`과 입력의 `for`-`id` 연결
+- [x] 시맨틱 태그 사용: `header`, `nav`, `main`, `section`, `article`, `footer`
+- [x] 섹션: Hero(인사, CTA) / About(소개, 프로필 사진) / Skills / Projects(GitHub 카드) / Contact(폼) / Footer(저작권, 소셜)
+- [x] 네비게이션 앵커 링크로 각 섹션 이동
+- [x] 모든 이미지에 의미 있는 `alt`
+- [x] 폼 `label`과 입력의 `for`-`id` 연결
 
 ### CSS
-- [ ] `:root` CSS 변수(색상, 폰트, 간격) + 다크 모드 변수 `[data-theme="dark"]`
-- [ ] 네비게이션은 Flexbox(로고 왼쪽, 메뉴 오른쪽), Projects 카드는 Grid(`auto-fit` + `minmax`)
-- [ ] 모바일 퍼스트, 브레이크포인트 768px / 1024px
-- [ ] 모바일에서 메뉴 숨김 + 햄버거 버튼
-- [ ] 버튼·카드 hover + transition, 카드 box-shadow
+- [x] `:root` CSS 변수(색상, 폰트, 간격) + 다크 모드 변수 `[data-theme="dark"]`
+- [x] 네비게이션은 Flexbox(로고 왼쪽, 메뉴 오른쪽), Projects 카드는 Grid(`auto-fit` + `minmax`)
+- [x] 모바일 퍼스트, 브레이크포인트 768px / 1024px
+- [x] 모바일에서 메뉴 숨김 + 햄버거 버튼
+- [x] 버튼·카드 hover + transition, 카드 box-shadow
 
 ### JavaScript 기본
-- [ ] `const`/`let`만 사용, `onclick` 대신 `addEventListener`
-- [ ] `querySelector(All)`, `textContent`/`innerHTML`, `classList.add/remove/toggle`
-- [ ] click, submit, scroll, input 이벤트 처리, `preventDefault()`
+- [x] `const`/`let`만 사용, `onclick` 대신 `addEventListener`
+- [x] `querySelector(All)`, `textContent`/`innerHTML`, `classList.add/remove/toggle`
+- [x] click, submit, scroll, input 이벤트 처리, `preventDefault()`
 
 ### 인터랙션
-- [ ] 햄버거 메뉴 토글 (`classList.toggle('active')`)
-- [ ] 부드러운 스크롤
-- [ ] 스크롤 탑 버튼 (기준 300px, 바꾸면 아래 "구현"에 기록)
-- [ ] 스크롤 시 네비게이션 배경 변경 (기준 60px, 바꾸면 기록)
-- [ ] 다크 모드 토글 + localStorage 저장(새로고침 후 유지)
-- [ ] 스크롤 애니메이션: Intersection Observer (threshold 0.2 이상 권장, 값 기록)
-- [ ] 문의 폼(이름/이메일/메시지): 필수값 검증, 이메일 형식 검증, 필드 옆 에러 메시지, 제출 시 성공 메시지
+- [x] 햄버거 메뉴 토글 (`classList.toggle('active')`)
+- [x] 부드러운 스크롤
+- [x] 스크롤 탑 버튼 (기준 300px, 바꾸면 아래 "구현"에 기록)
+- [x] 스크롤 시 네비게이션 배경 변경 (기준 60px, 바꾸면 기록)
+- [x] 다크 모드 토글 + localStorage 저장(새로고침 후 유지)
+- [x] 스크롤 애니메이션: Intersection Observer (threshold 0.2 이상 권장, 값 기록)
+- [x] 문의 폼(이름/이메일/메시지): 필수값 검증, 이메일 형식 검증, 필드 옆 에러 메시지, 제출 시 성공 메시지
 
 ### ES6+
-- [ ] 화살표 함수, 템플릿 리터럴로 HTML 생성, 구조분해 할당
-- [ ] `map`(데이터 → 카드), `forEach`, `filter`(선택)
+- [x] 화살표 함수, 템플릿 리터럴로 HTML 생성, 구조분해 할당
+- [x] `map`(데이터 → 카드), `forEach`, `filter`(선택)
 
 ### API 연동
-- [ ] `fetch` + `async/await`로 `https://api.github.com/users/KKamtte/repos` 호출, `try/catch`
-- [ ] 로딩(스피너/"로딩 중...") / 성공(카드) / 에러("프로젝트를 불러올 수 없습니다" + 재시도 버튼) / 빈 상태("표시할 프로젝트가 없습니다")
-- [ ] 레이트 리밋(403)일 때도 에러 상태 표시
+- [x] `fetch` + `async/await`로 `https://api.github.com/users/KKamtte/repos` 호출, `try/catch`
+- [x] 로딩(스피너/"로딩 중...") / 성공(카드) / 에러("프로젝트를 불러올 수 없습니다" + 재시도 버튼) / 빈 상태("표시할 프로젝트가 없습니다")
+- [x] 레이트 리밋(403)일 때도 에러 상태 표시
 
 ### 상태 → 렌더링 흐름 (3개 이상)
-- [ ] 다크 모드 토글 → 테마 상태 → 전체 스타일
-- [ ] API 호출 → 로딩/성공/에러 상태 → Projects 렌더링
-- [ ] 폼 입력 → 유효성 상태 → 에러 메시지 표시/숨김
-- [ ] (선택) 필터 버튼 → 필터 상태 → 목록 변경
+- [x] 다크 모드 토글 → 테마 상태 → 전체 스타일
+- [x] API 호출 → 로딩/성공/에러 상태 → Projects 렌더링
+- [x] 폼 입력 → 유효성 상태 → 에러 메시지 표시/숨김
+- [x] (선택) 필터 버튼 → 필터 상태 → 목록 변경
 
 ### 배포 / 제출
 - [ ] GitHub Pages 배포, 배포 URL에서 모든 기능 동작
@@ -66,10 +66,10 @@ GitHub API로 내 저장소 목록을 불러와 로딩/성공/에러/빈 상태�
 - [ ] 제출: 저장소 URL, 배포 URL, 스크린샷
 
 ### 보너스 (선택)
-- [ ] 언어별 프로젝트 필터 (`filter`)
-- [ ] Hero 타이핑 효과
-- [ ] 폼 실제 전송 (Formspree / EmailJS)
-- [ ] 시스템 다크 모드 감지 (`prefers-color-scheme`)
+- [x] 언어별 프로젝트 필터 (`filter`)
+- [x] Hero 타이핑 효과
+- [ ] 폼 실제 전송 (Formspree / EmailJS) — 하지 않음 (외부 가입 필요)
+- [x] 시스템 다크 모드 감지 (`prefers-color-scheme`)
 
 ## 제약 / 평가 기준
 
@@ -152,12 +152,24 @@ B1-1-self-intro-page/
   - 한 번 에러가 난 칸은 입력(`input`)할 때마다 다시 검사해, 고치는 즉시 메시지가 사라진다. 처음부터 입력마다 검사하면 쓰기도 전에 에러가 떠서 이렇게 나눴다.
   - 공백만 넣은 값은 `trim()`으로 빈 값으로 본다. 이메일은 `이름@도메인.최상위` 모양인지 정규식으로 확인한다.
   - 에러 칸에는 `aria-invalid="true"`를 붙여 테두리를 빨갛게 하고, `aria-describedby`로 에러 문장과 연결해 화면 낭독기가 함께 읽게 했다.
-  - 실제 전송 기능은 없어서(보너스 항목), 성공 메시지에 데모 폼이라 전송되지 않는다는 점을 알리고 이메일 연락을 안내한다.
+  - 실제 전송 기능은 없어서, 성공 메시지에 데모 폼이라 전송되지 않는다는 점을 알리고 이메일 연락을 안내한다.
 
 - **내용**: 이력서를 바탕으로 쓰되 공개 페이지라 연락처는 이메일과 GitHub만 둔다(전화번호 제외).
   경력은 회사별 기간·역할과 대표 성과 수치 몇 개만 넣어 과하지 않게 했다.
 - **프로필 이미지**: 실제 사진 대신 증명사진을 참고해 SVG로 직접 그린 캐릭터를 쓴다. 실제 얼굴 사진은 공개 후 회수하기 어렵고,
   SVG는 코드라서 크기와 상관없이 선명하고 파일이 작다.
+
+### 보너스
+
+- **언어별 필터**: 불러온 저장소의 언어를 `new Set`으로 중복 없이 모아 버튼(All / Java / TypeScript)을 만든다.
+  버튼 클릭 → `activeLanguage` 상태 변경 → `filter`로 고른 카드만 다시 그린다. 버튼마다 이벤트를 달지 않고 부모 하나에서 받는다(이벤트 위임).
+  누른 버튼은 `aria-pressed="true"`로 표시하고 CSS가 그 속성으로 색을 바꾼다.
+- **타이핑 효과**: Hero 소개 문장을 `setTimeout`으로 60ms마다 한 글자씩 늘려 보여 주고, 끝나면 깜빡이는 커서를 멈춘다.
+  화면 낭독기가 글자 조각을 읽지 않도록 움직이는 글은 `aria-hidden`, 전체 문장은 화면에 안 보이는 `.sr-only`로 따로 둔다.
+  JS가 안 돌아도 문장이 그대로 보이고, 동작 줄이기 설정이면 바로 전체를 보여 준다.
+- **시스템 다크 모드 감지**: 토글로 직접 고른 적이 없으면 `prefers-color-scheme`(운영체제 설정)을 따른다. 우선순위는 직접 고른 값 > 운영체제 설정.
+  운영체제 설정이 바뀌면(`change` 이벤트) 고른 적 없는 사용자에게만 바로 반영한다.
+- **폼 실제 전송 (Formspree)은 하지 않았다**: 외부 서비스 가입이 필요해 이번에는 제외했다. 성공 메시지에 데모 폼이라 실제로 전송되지 않는다고 알린다.
 
 ### 기준값
 
@@ -165,6 +177,7 @@ B1-1-self-intro-page/
 |---|---|---|
 | 맨 위로 버튼 표시 | 스크롤 300px 이상 | `js/main.js` `SCROLL_TOP_OFFSET` |
 | 네비게이션 배경 변경 | 스크롤 60px 이상 | `js/main.js` `HEADER_SCROLL_OFFSET` |
+| 타이핑 효과 글자 간격 | 60ms | `js/main.js` `TYPING_DELAY` |
 | 스크롤 애니메이션 threshold | 0.2 (섹션 20%가 보이면) | `js/main.js` `REVEAL_THRESHOLD` |
 | 브레이크포인트 | 768px, 1024px | `css/style.css` |
 
