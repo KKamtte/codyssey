@@ -1,0 +1,23 @@
+/* =========================================================
+   B1-1 포트폴리오 스타일
+   - a-1: 기본 리셋만 둔다
+   - a-2: 변수, 모바일 퍼스트 레이아웃, 반응형
+   ========================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}

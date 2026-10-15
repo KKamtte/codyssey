@@ -87,7 +87,30 @@ GitHub API로 내 저장소 목록을 불러와 로딩/성공/에러/빈 상태�
 
 ## 구현
 
-(구현하면서 채운다: 실행 방법, 폴더 구조, 기준값(스크롤 300/60px, threshold), 주요 결정과 이유, 배포 URL)
+### 실행 방법
+
+VS Code에서 이 폴더를 열고 Live Server로 `index.html`을 연다.
+Live Server가 없으면 이 폴더에서 `python3 -m http.server 5500` 실행 후 http://127.0.0.1:5500 접속.
+
+### 폴더 구조
+
+```
+B1-1-self-intro-page/
+├── index.html        # 페이지 구조 (시맨틱 태그)
+├── css/style.css     # 스타일
+├── js/main.js        # 동작 (defer 로 불러옴)
+└── images/           # 이미지 (profile.svg: 기본 프로필 이미지)
+```
+
+### 주요 결정
+
+- **시맨틱 구조**: `header > nav`, `main > section` 5개(Hero/About/Skills/Projects/Contact), `footer`.
+  섹션마다 `aria-labelledby`로 제목과 연결해 화면 낭독기에서도 구역 이름이 읽힌다.
+- **`defer`로 JS 연결**: HTML을 다 읽은 뒤 실행되므로 `DOMContentLoaded`를 기다리지 않아도 `querySelector`로 요소를 찾을 수 있다.
+- **폼 `novalidate`**: 브라우저 기본 검증 대신 JS로 검증하고, 에러 메시지를 각 필드 아래 `.form__error`에 표시한다 (a-6).
+- **Projects 영역 분리**: 상태 메시지(`.projects__status`)와 카드 목록(`.projects__grid`)을 나눠 로딩/에러/빈 상태를 따로 렌더링한다 (a-5).
+
+(기준값, 배포 URL은 이후 단계에서 채운다)
 
 ## 회고
 
