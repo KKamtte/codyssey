@@ -17,6 +17,7 @@
   --color-accent: #1f6b4a;
   --color-accent-hover: #17573c;
   --color-accent-soft: #e6f2ec;
+  --color-on-accent: #ffffff;
   --color-error: #c2372d;
   --color-header-bg: rgba(255, 255, 255, 0.92);
   --color-header-shadow: rgba(0, 0, 0, 0.06);
@@ -40,6 +41,27 @@
   --header-height: 64px;
 }
 
+/* 다크 모드: <html data-theme="dark"> 일 때 색 변수만 바꾼다. 나머지 규칙은 그대로 변수를 쓴다 */
+[data-theme="dark"] {
+  --color-bg: #121614;
+  --color-bg-soft: #181d1a;
+  --color-surface: #1c2220;
+  --color-text: #e6ebe8;
+  --color-text-muted: #9aa7a0;
+  --color-border: #2c3531;
+  --color-accent: #5cc493;
+  --color-accent-hover: #7dd6ab;
+  --color-accent-soft: #1f3a2d;
+  --color-on-accent: #0d1a13;
+  --color-error: #ff7b72;
+  --color-header-bg: rgba(18, 22, 20, 0.9);
+  --color-header-shadow: rgba(0, 0, 0, 0.4);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark; /* 스크롤바, 폼 기본 색도 어둡게 */
+}
+
 /* ---------- 2. 리셋·기본 ---------- */
 *,
 *::before,
@@ -54,6 +76,7 @@ html {
 
 body {
   margin: 0;
+  transition: background-color var(--transition), color var(--transition);
   font-family: var(--font-body);
   line-height: 1.7;
   color: var(--color-text);
@@ -136,13 +159,13 @@ ol {
 
 .btn--primary {
   background-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }
 
 .btn--primary:hover {
   background-color: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }
 
 .btn--secondary {
@@ -547,7 +570,7 @@ ol {
   border: 0;
   border-radius: 50%;
   background-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-on-accent);
   font-size: 1.25rem;
   box-shadow: var(--shadow-hover);
   cursor: pointer;

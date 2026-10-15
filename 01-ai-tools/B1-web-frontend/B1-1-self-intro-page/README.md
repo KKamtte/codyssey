@@ -98,6 +98,7 @@ Live Server가 없으면 이 폴더에서 `python3 -m http.server 5500` 실행 �
 B1-1-self-intro-page/
 ├── index.html        # 페이지 구조 (시맨틱 태그)
 ├── css/style.css     # 스타일
+├── js/theme-init.js  # 저장된 테마를 화면 그리기 전에 적용 (defer 없이 head 에서)
 ├── js/main.js        # 동작 (defer 로 불러옴)
 └── images/           # 이미지 (profile.svg: 기본 프로필 이미지)
 ```
@@ -130,6 +131,13 @@ B1-1-self-intro-page/
   주소창 해시는 `history.pushState`로 맞춘다. 운영체제의 "동작 줄이기"를 켠 사용자에게는 애니메이션 없이 바로 이동한다.
 - **스크롤 애니메이션**: Intersection Observer로 섹션이 보이면 한 번만 나타나게 하고 관찰을 끊는다(`unobserve`).
   숨김 클래스(`.reveal`)를 JS가 붙이므로 JS가 실패해도 내용은 보인다.
+
+- **다크 모드**: `<html data-theme="dark">`일 때 `[data-theme="dark"]` 규칙이 색 변수만 덮어쓴다. 컴포넌트 CSS는 변수만 쓰므로 고칠 필요가 없다.
+  토글하면 `localStorage`의 `theme`에 `dark`/`light`를 저장한다. 저장소 접근이 막힌 환경에서도 오류 없이 전환만 되도록 `try...catch`로 감쌌다.
+  다크 배경에서는 진한 초록이 잘 안 보여 포인트 색을 밝은 초록으로 바꾸고, 버튼 글자색(`--color-on-accent`)도 함께 바꾼다.
+- **테마 깜빡임 방지**: `main.js`는 `defer`라 화면을 그린 뒤 실행된다. 저장된 테마를 여기서 적용하면 다크 모드 사용자에게 흰 화면이 잠깐 보이므로,
+  저장값을 읽어 적용하는 작은 `theme-init.js`만 `<head>`에서 `defer` 없이 먼저 실행한다.
+- **토글 버튼 접근성**: 아이콘(🌙/☀️)만 있는 버튼이라 `aria-label`로 "다크 모드로 전환" 등 동작을 알리고, `aria-pressed`로 켜짐 상태를 알린다.
 
 ### 기준값
 

@@ -17,6 +17,40 @@ const footerYear = document.querySelector('.footer__year');
 
 footerYear.textContent = new Date().getFullYear();
 
+// ---------- 다크 모드 ----------
+// 테마는 <html data-theme="dark"> 로 표시하고, 색은 CSS 변수가 바꾼다.
+// 선택은 localStorage 'theme' 에 저장해 새로고침 후에도 유지한다 (처음 적용은 theme-init.js).
+const THEME_STORAGE_KEY = 'theme';
+const themeToggle = document.querySelector('.theme-toggle');
+
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  if (isDark) {
+    document.documentElement.dataset.theme = 'dark';
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+  themeToggle.textContent = isDark ? '☀️' : '🌙';
+  themeToggle.setAttribute('aria-label', isDark ? '라이트 모드로 전환' : '다크 모드로 전환');
+  themeToggle.setAttribute('aria-pressed', String(isDark));
+}
+
+function saveTheme(theme) {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (error) {
+    // 저장이 막혀도 지금 화면의 테마 전환은 그대로 동작한다
+  }
+}
+
+themeToggle.addEventListener('click', () => {
+  const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(nextTheme);
+  saveTheme(nextTheme);
+});
+
+applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light'); // 버튼 아이콘을 현재 테마에 맞춘다
+
 // ---------- 햄버거 메뉴 ----------
 function setMenuOpen(isOpen) {
   navMenu.classList.toggle('active', isOpen);
