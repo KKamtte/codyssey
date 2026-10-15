@@ -104,11 +104,23 @@ B1-1-self-intro-page/
 
 ### 주요 결정
 
-- **시맨틱 구조**: `header > nav`, `main > section` 5개(Hero/About/Skills/Projects/Contact), `footer`.
+- **시맨틱 구조**: `header > nav`, `main > section` 6개(Hero/About/Experience/Skills/Projects/Contact), `footer`.
+  Experience는 필수 섹션 외에 추가했다. 백엔드 경력이 핵심이라 About에 섞기보다 따로 두는 편이 읽기 쉽다.
   섹션마다 `aria-labelledby`로 제목과 연결해 화면 낭독기에서도 구역 이름이 읽힌다.
 - **`defer`로 JS 연결**: HTML을 다 읽은 뒤 실행되므로 `DOMContentLoaded`를 기다리지 않아도 `querySelector`로 요소를 찾을 수 있다.
 - **폼 `novalidate`**: 브라우저 기본 검증 대신 JS로 검증하고, 에러 메시지를 각 필드 아래 `.form__error`에 표시한다 (a-6).
 - **Projects 영역 분리**: 상태 메시지(`.projects__status`)와 카드 목록(`.projects__grid`)을 나눠 로딩/에러/빈 상태를 따로 렌더링한다 (a-5).
+
+- **디자인 방향**: 흰 바탕과 넓은 여백(미니멀)에 성과 수치를 큰 숫자 카드로 보여준다(대시보드형).
+  포인트 색은 딥그린 하나, 본문 폰트는 IBM Plex Sans KR, 수치·코드는 JetBrains Mono(Google Fonts).
+- **CSS 변수(`:root`)**: 색·폰트·간격·그림자를 변수로 모았다. 다크 모드(a-4)는 변수 값만 바꾸면 된다.
+- **모바일 퍼스트**: 기본 스타일을 좁은 화면 기준으로 쓰고 `min-width: 768px`, `min-width: 1024px`에서 덮어쓴다.
+  모바일에서는 메뉴를 접고 햄버거를 보이며, 768px 이상에서 햄버거를 숨기고 메뉴를 가로로 편다.
+- **Flexbox와 Grid 구분**: 한 줄로 늘어놓는 것(네비, 버튼 묶음, 기술 칩)은 Flexbox,
+  카드 목록(성과 카드, 기술 분류, 프로젝트)은 Grid `repeat(auto-fill/auto-fit, minmax(...))`로 화면 폭에 따라 열 수가 바뀐다.
+  성과 카드는 `auto-fill`로 두어 카드가 하나뿐일 때 한 줄을 다 차지하지 않게 했다.
+- **고정 헤더와 앵커**: 헤더를 `position: fixed`로 두고 `scroll-padding-top`으로 앵커 이동 시 제목이 가려지지 않게 했다.
+- **상태 클래스**: 메뉴 펼침(`.is-open`), 맨 위로 버튼 표시(`.is-visible`)는 CSS에 미리 정의하고 JS는 클래스만 붙인다 (a-3).
 
 (기준값, 배포 URL은 이후 단계에서 채운다)
 
