@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="[이름]의 포트폴리오 - 자기소개, 기술 스택, 프로젝트, 연락처">
-  <title>[이름] | Portfolio</title>
+  <meta name="description" content="백엔드 개발자 김승현의 포트폴리오 - 자기소개, 경력, 기술 스택, 프로젝트, 연락처">
+  <title>김승현 | Backend Developer Portfolio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
@@ -15,7 +15,7 @@
 <body>
   <header class="site-header">
     <nav class="nav" aria-label="주요 메뉴">
-      <a class="nav__logo" href="#hero">[이름]</a>
+      <a class="nav__logo" href="#hero">김승현</a>
       <button class="nav__toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="nav-menu">
         <span class="nav__toggle-bar"></span>
         <span class="nav__toggle-bar"></span>
@@ -35,8 +35,8 @@
   <main>
     <section class="hero" id="hero" aria-labelledby="hero-title">
       <p class="hero__greeting">Hello!</p>
-      <h1 class="hero__title" id="hero-title">I am <span class="hero__name">[이름]</span>.</h1>
-      <p class="hero__lead">[한 줄 소개]</p>
+      <h1 class="hero__title" id="hero-title">I am <span class="hero__name">김승현</span>.</h1>
+      <p class="hero__lead">데이터의 무결성과 시스템의 본질을 고민하는 백엔드 개발자입니다.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#projects">View Projects</a>
         <a class="btn btn--secondary" href="#contact">Contact</a>
@@ -46,10 +46,16 @@
     <section class="section about" id="about" aria-labelledby="about-title">
       <h2 class="section__title" id="about-title">About Me</h2>
       <div class="about__content">
-        <img class="about__photo" src="images/profile.svg" alt="[이름]의 프로필 이미지" width="200" height="200">
+        <img class="about__photo" src="images/avatar.svg" alt="김승현 캐릭터 일러스트" width="200" height="200">
         <div class="about__text">
-          <p>[자기소개 문단]</p>
-          <p>[관심사 / 목표]</p>
+          <p>
+            DNS 서비스, 가상화폐 거래소, 커머스 도메인에서 5년간 결제·정산과 대용량 데이터 처리 시스템을 설계하고 운영했습니다.
+            문제를 만나면 지금 환경에서 할 수 있는 방법을 먼저 직접 재 보고, 한계를 확인한 뒤 근거 있는 기술을 고릅니다.
+          </p>
+          <p>
+            트랜잭션과 동시성 문제를 구조로 풀어내는 일을 좋아합니다.
+            지금은 코디세이 AI 도구 과정에서 웹 프론트엔드와 AI 도구 활용을 배우고 있고, 이 페이지가 그 첫 과제입니다.
+          </p>
         </div>
       </div>
     </section>
@@ -60,18 +66,22 @@
         <li class="timeline__item">
           <article class="job">
             <div class="job__header">
-              <h3 class="job__company">[회사 A]</h3>
-              <p class="job__period">[기간]</p>
+              <h3 class="job__company">커넥트파이클라우드</h3>
+              <p class="job__period">2024.02 – 2025.11</p>
             </div>
-            <p class="job__desc">[도메인 / 역할]</p>
+            <p class="job__desc">프롭테크 O2O 컨시어지 서비스 · 백엔드 개발 (커머스 정산, 시스템 간 동기화, 결제 알림)</p>
             <ul class="metrics">
               <li class="metric">
-                <span class="metric__value">[수치]</span>
-                <span class="metric__label">[성과 설명]</span>
+                <span class="metric__value">2~3초 → 50~100ms</span>
+                <span class="metric__label">구매 확정 처리 시간 (정산 트랜잭션 분리)</span>
               </li>
               <li class="metric">
-                <span class="metric__value">[수치]</span>
-                <span class="metric__label">[성과 설명]</span>
+                <span class="metric__value">0건</span>
+                <span class="metric__label">서버 장애 시 메시지 유실 (SQS·DLQ 기반 동기화)</span>
+              </li>
+              <li class="metric">
+                <span class="metric__value">40%</span>
+                <span class="metric__label">카카오 알림톡 결제 전환율</span>
               </li>
             </ul>
           </article>
@@ -79,14 +89,18 @@
         <li class="timeline__item">
           <article class="job">
             <div class="job__header">
-              <h3 class="job__company">[회사 B]</h3>
-              <p class="job__period">[기간]</p>
+              <h3 class="job__company">디앤에스에버</h3>
+              <p class="job__period">2020.12 – 2024.01</p>
             </div>
-            <p class="job__desc">[도메인 / 역할]</p>
+            <p class="job__desc">DNS 관리 서비스 · 가상화폐 거래소 백엔드 개발 (대규모 거래 통계)</p>
             <ul class="metrics">
               <li class="metric">
-                <span class="metric__value">[수치]</span>
-                <span class="metric__label">[성과 설명]</span>
+                <span class="metric__value">timeout → 0.1~0.5초</span>
+                <span class="metric__label">10TB 거래 데이터 통계 조회 (ClickHouse 도입)</span>
+              </li>
+              <li class="metric">
+                <span class="metric__value">60% → 40%</span>
+                <span class="metric__label">Aurora RDS CPU 사용률</span>
               </li>
             </ul>
           </article>
@@ -98,18 +112,53 @@
       <h2 class="section__title" id="skills-title">Skills</h2>
       <div class="skills__groups">
         <div class="skills__group">
-          <h3 class="skills__category">Frontend</h3>
+          <h3 class="skills__category">Language</h3>
           <ul class="skills__list">
-            <li class="skills__item">HTML</li>
-            <li class="skills__item">CSS</li>
+            <li class="skills__item">Java</li>
+            <li class="skills__item">TypeScript</li>
             <li class="skills__item">JavaScript</li>
+            <li class="skills__item">Python</li>
+          </ul>
+        </div>
+        <div class="skills__group">
+          <h3 class="skills__category">Backend</h3>
+          <ul class="skills__list">
+            <li class="skills__item">Spring Boot</li>
+            <li class="skills__item">JPA</li>
+            <li class="skills__item">MyBatis</li>
+            <li class="skills__item">Node.js (Express)</li>
+            <li class="skills__item">NestJS</li>
+          </ul>
+        </div>
+        <div class="skills__group">
+          <h3 class="skills__category">Database</h3>
+          <ul class="skills__list">
+            <li class="skills__item">PostgreSQL</li>
+            <li class="skills__item">ClickHouse</li>
+            <li class="skills__item">Aurora RDS</li>
+          </ul>
+        </div>
+        <div class="skills__group">
+          <h3 class="skills__category">Infra &amp; Messaging</h3>
+          <ul class="skills__list">
+            <li class="skills__item">AWS SQS</li>
+            <li class="skills__item">CloudWatch</li>
+            <li class="skills__item">Argo Workflow</li>
           </ul>
         </div>
         <div class="skills__group">
           <h3 class="skills__category">Tools</h3>
           <ul class="skills__list">
             <li class="skills__item">Git</li>
-            <li class="skills__item">Python</li>
+            <li class="skills__item">ShedLock</li>
+            <li class="skills__item">async-profiler</li>
+          </ul>
+        </div>
+        <div class="skills__group">
+          <h3 class="skills__category">Frontend (학습 중)</h3>
+          <ul class="skills__list">
+            <li class="skills__item">HTML</li>
+            <li class="skills__item">CSS</li>
           </ul>
         </div>
       </div>
@@ -117,7 +166,7 @@
 
     <section class="section projects" id="projects" aria-labelledby="projects-title">
       <h2 class="section__title" id="projects-title">Projects</h2>
-      <p class="projects__desc">GitHub 저장소 목록을 불러와 보여줍니다.</p>
+      <p class="projects__desc">GitHub API로 불러온 저장소 중 결과물로 볼 수 있는 것을 골라 보여줍니다.</p>
       <!-- 로딩/성공/에러/빈 상태는 js/main.js 가 이 영역에 렌더링한다 (a-5) -->
       <div class="projects__status" aria-live="polite"></div>
       <div class="projects__grid"></div>
@@ -125,6 +174,9 @@
 
     <section class="section contact" id="contact" aria-labelledby="contact-title">
       <h2 class="section__title" id="contact-title">Contact</h2>
+      <p class="contact__intro">
+        이메일 <a href="mailto:swye199@gmail.com">swye199@gmail.com</a> 으로 편하게 연락 주세요.
+      </p>
       <form class="contact__form" novalidate>
         <div class="form__field">
           <label for="contact-name">이름</label>
@@ -148,9 +200,10 @@
   </main>
 
   <footer class="site-footer">
-    <p>&copy; <span class="footer__year">2026</span> [이름]</p>
+    <p>&copy; <span class="footer__year">2026</span> 김승현</p>
     <ul class="footer__social">
       <li><a href="https://github.com/KKamtte" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+      <li><a href="mailto:swye199@gmail.com">Email</a></li>
     </ul>
   </footer>
 

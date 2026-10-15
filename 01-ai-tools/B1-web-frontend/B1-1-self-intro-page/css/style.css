@@ -402,7 +402,7 @@ ol {
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--space-sm);
 }
 
@@ -425,7 +425,8 @@ ol {
 
 .metric__value {
   font-family: var(--font-mono);
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  line-height: 1.4;
   font-weight: 700;
   color: var(--color-accent);
 }
@@ -574,6 +575,11 @@ ol {
 }
 
 /* ---------- 10. Contact ---------- */
+.contact__intro {
+  margin: calc(-1 * var(--space-md)) 0 var(--space-md);
+  color: var(--color-text-muted);
+}
+
 .contact__form {
   display: flex;
   flex-direction: column;
