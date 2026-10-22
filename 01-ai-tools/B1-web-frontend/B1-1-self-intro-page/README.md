@@ -2,6 +2,7 @@
 
 > 분야: 웹 기초와 프론트엔드 · 기간: 80시간(필수, 개인 미션) · 상태: 진행중
 > 원문: https://usr.codyssey.kr/learning/learningMap?projectNo=136003 → B1-1 (로컬 `MISSION.md`)
+> 배포: https://kkamtte.github.io/codyssey/01-ai-tools/B1-web-frontend/B1-1-self-intro-page/
 > 작업 계획·결정 사항: [wiki/plans/b1-1.md](../../../wiki/plans/b1-1.md)
 
 ## 과제 요약
@@ -61,8 +62,8 @@ GitHub API로 내 저장소 목록을 불러와 로딩/성공/에러/빈 상태�
 - [x] (선택) 필터 버튼 → 필터 상태 → 목록 변경
 
 ### 배포 / 제출
-- [ ] GitHub Pages 배포, 배포 URL에서 모든 기능 동작
-- [ ] 이 README에 프로젝트 설명, 사용 기술, 배포 URL, 스크린샷(데스크톱/모바일/다크 모드)
+- [x] GitHub Pages 배포, 배포 URL에서 모든 기능 동작
+- [x] 이 README에 프로젝트 설명, 사용 기술, 배포 URL, 스크린샷(데스크톱/모바일/다크 모드)
 - [ ] 제출: 저장소 URL, 배포 URL, 스크린샷
 
 ### 보너스 (선택)
@@ -100,7 +101,7 @@ B1-1-self-intro-page/
 ├── css/style.css     # 스타일
 ├── js/theme-init.js  # 저장된 테마를 화면 그리기 전에 적용 (defer 없이 head 에서)
 ├── js/main.js        # 동작 (defer 로 불러옴)
-└── images/           # 이미지 (avatar.svg: 캐릭터 프로필 이미지)
+└── images/           # 이미지 (avatar.svg: 캐릭터 프로필 이미지, screenshots/: README 스크린샷)
 ```
 
 ### 주요 결정
@@ -181,7 +182,15 @@ B1-1-self-intro-page/
 | 스크롤 애니메이션 threshold | 0.2 (섹션 20%가 보이면) | `js/main.js` `REVEAL_THRESHOLD` |
 | 브레이크포인트 | 768px, 1024px | `css/style.css` |
 
-(배포 URL은 이후 단계에서 채운다)
+### 배포
+
+GitHub Pages(`main` 브랜치, 레포 루트)로 배포했다: https://kkamtte.github.io/codyssey/01-ai-tools/B1-web-frontend/B1-1-self-intro-page/
+
+### 스크린샷
+
+| 데스크톱 (라이트) | 모바일 (메뉴 펼침) | 다크 모드 (Projects) |
+|---|---|---|
+| ![데스크톱](images/screenshots/desktop.jpg) | ![모바일](images/screenshots/mobile.jpg) | ![다크 모드](images/screenshots/dark.jpg) |
 
 ## 회고
 
