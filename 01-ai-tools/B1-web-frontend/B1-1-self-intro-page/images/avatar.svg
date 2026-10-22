@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="김승현 캐릭터 이미지">
+  <defs>
+    <clipPath id="circle">
+      <circle cx="100" cy="100" r="100"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#circle)">
+    <!-- 배경 -->
+    <rect width="200" height="200" fill="#e6f2ec"/>
+
+    <!-- 몸: 흰 니트 -->
+    <path d="M28 200c2-34 22-52 46-58l26 4 26-4c24 6 44 24 46 58z" fill="#f4f1ea"/>
+    <!-- 니트 V넥 초록 라인 -->
+    <path d="M70 141l30 46 30-46" fill="none" stroke="#1f6b4a" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M70 141l30 46 30-46" fill="none" stroke="#f4f1ea" stroke-width="2.5" stroke-linejoin="round"/>
+    <!-- 셔츠 -->
+    <path d="M76 140l24 40 24-40-10-6h-28z" fill="#ffffff"/>
+    <!-- 셔츠 깃 -->
+    <path d="M84 132l16 16-12 10-10-20z" fill="#ffffff" stroke="#d9dde3" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M116 132l-16 16 12 10 10-20z" fill="#ffffff" stroke="#d9dde3" stroke-width="1.5" stroke-linejoin="round"/>
+
+    <!-- 목 -->
+    <path d="M88 118h24v18l-12 12-12-12z" fill="#f0cfb4"/>
+
+    <!-- 귀 -->
+    <ellipse cx="58" cy="94" rx="7" ry="11" fill="#f2d3ba"/>
+    <ellipse cx="142" cy="94" rx="7" ry="11" fill="#f2d3ba"/>
+
+    <!-- 얼굴 -->
+    <path d="M60 82c0-24 18-40 40-40s40 16 40 40v8c0 24-18 42-40 42s-40-18-40-42z" fill="#f6dcc6"/>
+
+    <!-- 머리카락: 숱 많은 검은 머리, 앞머리가 이마를 덮음 -->
+    <path d="M54 92c-6-30 8-56 34-62 6-6 18-8 28-4 20 2 34 18 34 40 0 10-2 18-4 26
+             -2-10-6-18-10-22-6 6-16 8-26 6-4 4-12 6-20 4-8 4-18 4-24 0-4 4-8 8-12 12z"
+          fill="#1e1b1a"/>
+    <!-- 머리카락 결 -->
+    <path d="M70 52c8-8 20-12 32-10M98 40c12-2 26 4 32 14M80 66c6-6 14-8 22-6"
+          fill="none" stroke="#3a3533" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- 눈썹 -->
+    <path d="M74 84c6-3 12-3 18-1M108 83c6-2 12-2 18 1" fill="none" stroke="#2a2422" stroke-width="3.5" stroke-linecap="round"/>
+    <!-- 눈 -->
+    <ellipse cx="83" cy="95" rx="5" ry="4" fill="#2a2422"/>
+    <ellipse cx="117" cy="95" rx="5" ry="4" fill="#2a2422"/>
+    <circle cx="84.5" cy="93.5" r="1.3" fill="#ffffff"/>
+    <circle cx="118.5" cy="93.5" r="1.3" fill="#ffffff"/>
+    <!-- 볼 -->
+    <ellipse cx="74" cy="108" rx="7" ry="4" fill="#f2b8a2" opacity="0.5"/>
+    <ellipse cx="126" cy="108" rx="7" ry="4" fill="#f2b8a2" opacity="0.5"/>
+    <!-- 코 -->
+    <path d="M100 98v8l-3 3" fill="none" stroke="#d9a98c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- 입: 살짝 미소 -->
+    <path d="M92 117c5 3 11 3 16 0" fill="none" stroke="#b56a5a" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+</svg>

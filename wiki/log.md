@@ -10,3 +10,6 @@
 
 ## [2026-10-14] mission | B1-1 시작
 - 원문 받아 `01-ai-tools/B1-web-frontend/B1-1-self-intro-page/`에 README(요약·요구사항 체크리스트) 작성. 순수 HTML/CSS/JS 포트폴리오 + GitHub API + GitHub Pages 배포.
+
+## [2026-10-22] quiz | B1-1 - 미디어 쿼리에서 덮어쓰는 규칙, 필터의 바뀌는 상태 값
+- 768px 이상에서 `.nav__toggle`/`.nav__menu`를 무엇으로 덮어쓰는지 설명 못 함. 필터 클릭 시 바뀌는 값(`activeLanguage`)과 렌더 함수를 섞어 답함. 자세한 내용은 [[b1-1-review-qa]].
