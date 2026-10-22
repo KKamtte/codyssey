@@ -20,4 +20,4 @@
 - [[karpathy-llm-wiki]] — Karpathy의 LLM Wiki 아이디어 원문 요약
 
 ## Analyses
-- (없음)
+- [[b1-1-review-qa]] — B1-1 push 전 문답 기록 (6문항, 꼬리 질문, 다시 볼 것)
