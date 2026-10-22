@@ -13,3 +13,6 @@
 
 ## [2026-10-22] quiz | B1-1 - 미디어 쿼리에서 덮어쓰는 규칙, 필터의 바뀌는 상태 값
 - 768px 이상에서 `.nav__toggle`/`.nav__menu`를 무엇으로 덮어쓰는지 설명 못 함. 필터 클릭 시 바뀌는 값(`activeLanguage`)과 렌더 함수를 섞어 답함. 자세한 내용은 [[b1-1-review-qa]].
+
+## [2026-10-22] mission | B1-1 완료
+- GitHub Pages 배포(https://kkamtte.github.io/codyssey/01-ai-tools/B1-web-frontend/B1-1-self-intro-page/), README 회고·스크린샷. 배운 개념 [[semantic-html]], [[flexbox-vs-grid]], [[dom-event-state-render]], [[es6-syntax]], [[fetch-async-ui-state]]. 계획 [[b1-1]] done. 코디세이 제출은 사용자가 직접.

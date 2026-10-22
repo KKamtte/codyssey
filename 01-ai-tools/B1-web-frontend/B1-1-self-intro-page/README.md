@@ -1,6 +1,6 @@
 # B1-1 나를 소개하는 웹페이지 처음부터 만들기
 
-> 분야: 웹 기초와 프론트엔드 · 기간: 80시간(필수, 개인 미션) · 상태: 진행중
+> 분야: 웹 기초와 프론트엔드 · 기간: 80시간(필수, 개인 미션) · 상태: 완료
 > 원문: https://usr.codyssey.kr/learning/learningMap?projectNo=136003 → B1-1 (로컬 `MISSION.md`)
 > 배포: https://kkamtte.github.io/codyssey/01-ai-tools/B1-web-frontend/B1-1-self-intro-page/
 > 작업 계획·결정 사항: [wiki/plans/b1-1.md](../../../wiki/plans/b1-1.md)
@@ -194,4 +194,19 @@ GitHub Pages(`main` 브랜치, 레포 루트)로 배포했다: https://kkamtte.g
 
 ## 회고
 
-(막혔던 것, 배운 것)
+### 막혔던 것
+- **고쳤는데 화면이 안 바뀜**: 브라우저가 옛 CSS/JS를 캐시하고 있었다. 강력 새로고침이나 주소 뒤 `?v=N`으로 해결. "코드가 틀렸나"보다 "새 파일을 받았나"를 먼저 의심하게 됐다.
+- **Grid 카드 폭**: 성과 카드가 하나뿐인 줄에서 카드가 한 줄을 다 차지했다. `auto-fit`(빈 칸을 없애고 늘림)과 `auto-fill`(빈 칸을 남김)의 차이였다.
+- **보여 줄 저장소 고르기**: 처음 고른 저장소가 미완성이라, 전체를 다시 훑어 결과물로 볼 수 있는 3개로 바꿨다. API로 "불러오는 것"보다 "무엇을 보여 줄지"가 더 오래 걸렸다.
+- **fetch 에러 처리**: 403이 와도 fetch는 실패로 치지 않는다는 걸 알고 나서야 상태를 나눌 수 있었다.
+
+### 배운 것
+- 화면을 직접 고치지 않고 "상태 하나 바꾸고 다시 그리기"로 짜면, 기능이 늘어도 어디서 화면이 바뀌는지 한 곳만 보면 된다. React로 넘어갈 준비가 된 느낌.
+- 접근성 속성(`aria-expanded`, `aria-pressed`, `aria-invalid`, `aria-live`)은 상태를 화면 낭독기에도 알려 주는 것이라, 상태 → 렌더링 흐름과 같이 움직인다.
+- 모바일 퍼스트는 "작게 쓰고 크게 덮어쓰기". 다만 문답에서 768px에서 무엇을 덮어쓰는지 규칙 단위로 말하지 못했다 → 다시 볼 것.
+
+### 다음에 다르게 할 것
+- 미디어 쿼리·상태 흐름은 "바뀌는 값"과 "그걸 읽는 코드"를 나눠서 설명하는 연습을 한다 ([문답 기록](../../../wiki/analyses/b1-1-review-qa.md)).
+- 보너스 중 폼 실제 전송(Formspree)은 외부 가입이 필요해 하지 않았다. 필요해지면 그때 붙인다.
+
+배운 개념 정리: [시맨틱 HTML](../../../wiki/concepts/semantic-html.md) · [Flexbox와 Grid](../../../wiki/concepts/flexbox-vs-grid.md) · [DOM·이벤트·상태 렌더링](../../../wiki/concepts/dom-event-state-render.md) · [ES6 문법](../../../wiki/concepts/es6-syntax.md) · [fetch와 UI 상태](../../../wiki/concepts/fetch-async-ui-state.md)
