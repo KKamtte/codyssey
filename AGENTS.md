@@ -13,6 +13,8 @@ README.md               # 목차 (과정 구성, 과제 표)
 02-ai-advanced/         # AI 심화 학습
 03-ai-applied/          # AI 응용 학습
 wiki/                   # 학습 위키 (LLM Wiki 패턴)
+
+../codyssey-mission/    # 별도 비공개 레포: 미션 원문 <과제 폴더명>.md
 ```
 
 - 폴더명은 영문 kebab-case. 과제 코드는 코디세이 표기(`B1-1`) 그대로.
@@ -24,7 +26,7 @@ wiki/                   # 학습 위키 (LLM Wiki 패턴)
 
 | 정보 | 위치 |
 |---|---|
-| 과제 원문 | 과제 폴더 `MISSION.md` (로컬 전용, 커밋 안 됨) |
+| 과제 원문 | 비공개 레포 `../codyssey-mission/<과제 폴더명>.md` (예: `B1-1-self-intro-page.md`) |
 | 무엇을 만드나 / 어떻게 만들었나 (제출용) | 과제 폴더 `README.md` |
 | 미션의 할 일, 작업 단계, 정할 것·정한 것 | `wiki/plans/<코드>.md` (예: `b1-1.md`) |
 | 여러 미션이나 레포 전체에 걸친 할 일·미결정 사항 | `wiki/plans/<주제>.md` |
@@ -39,7 +41,7 @@ wiki/                   # 학습 위키 (LLM Wiki 패턴)
 ## 미션(과제) 진행 절차
 
 ### 시작
-1. `MISSION.md` 확인. 없으면 아래 "과제 원문" 절차로 먼저 받는다.
+1. 과제 원문 확인. 없으면 아래 "과제 원문" 절차로 먼저 받는다.
 2. 과제 폴더와 `README.md`를 틀대로 만든다 (과제 요약·요구사항은 Claude가 초안, 사용자가 확인).
 3. `wiki/plans/<코드>.md`에 작업 단계(a-0, a-1, …)와 결정 사항 표를 만든다.
 4. 루트 `README.md` 과제 표: 링크 걸고 상태 "진행중".
@@ -89,16 +91,21 @@ wiki/                   # 학습 위키 (LLM Wiki 패턴)
 - 막혔던 것, 배운 것 (배운 개념은 wiki/concepts 로)
 ```
 
-### 과제 원문 `MISSION.md`
+### 과제 원문 (`codyssey-mission` 레포)
+
+원문은 비공개 레포 [codyssey-mission](https://github.com/KKamtte/codyssey-mission)(로컬 `../codyssey-mission/`)에 과제 폴더명과 같은 이름 `<과제 폴더명>.md`로 둔다.
+이 레포에는 원문을 넣지 않는다.
 
 **과제 작업을 시작하기 전에 항상:**
-1. 과제 폴더의 `MISSION.md`를 읽는다.
+1. `../codyssey-mission/<과제 폴더명>.md`를 읽는다.
 2. 없으면 작업 전에 원문부터 받는다.
-   - 브라우저 확장(Claude in Chrome 등)이 연결된 PC: 로그인된 브라우저에서 README의 `원문:` URL을 열어 본문을 `MISSION.md`로 저장한다.
+   - 브라우저 확장(Claude in Chrome 등)이 연결된 PC: 로그인된 브라우저에서 README의 `원문:` URL을 열어 본문을 위 경로에 저장한다.
      로그인이 안 되어 있으면 사용자에게 직접 로그인을 요청한다. 비밀번호는 다루지 않는다.
    - 브라우저가 없는 곳(모바일 등): 사용자에게 원문 붙여넣기를 요청한다.
      어렵다고 하면 README 요약만으로 진행한다고 알리고 진행한다.
-3. 원문과 README 요약이 다르면 원문 기준으로 README를 고치고 사용자에게 알린다.
+   - 저장한 원문은 `codyssey-mission`의 `main`에 `docs: <코드> 미션 원문 추가`로 커밋하고, 사용자 확인 후 push한다.
+3. `../codyssey-mission`이 없는 환경이면 사용자에게 원문 붙여넣기를 요청한다 (위와 같이 진행).
+4. 원문과 README 요약이 다르면 원문 기준으로 README를 고치고 사용자에게 알린다.
 
 ## Git 규칙
 
@@ -123,7 +130,7 @@ wiki/                   # 학습 위키 (LLM Wiki 패턴)
 
 ## 세션
 
-- 시작: `git switch main && git pull` (진행 중인 미션 브랜치가 있으면 그 브랜치로) → `wiki/index.md` 읽기 → `grep "^## \[" wiki/log.md | tail -5` → `wiki/plans/`의 `status: open` 항목 확인.
+- 시작: `git switch main && git pull` (진행 중인 미션 브랜치가 있으면 그 브랜치로) → `git -C ../codyssey-mission pull` → `wiki/index.md` 읽기 → `grep "^## \[" wiki/log.md | tail -5` → `wiki/plans/`의 `status: open` 항목 확인.
 - 끝: plans 체크 상태 갱신 → 해당하면 log 기록 → 커밋은 요청 시, push는 확인 후.
 - 두 곳(PC / 모바일)에서 동시에 작업하지 않는다.
 
@@ -213,5 +220,5 @@ status: open                       # plans 페이지만. open | done
 
 - `wiki/raw/` 파일 수정 금지.
 - 비밀번호, 토큰, 키, 개인 키, 회사 업무 정보 금지. 공개 레포다.
-- 코디세이 과제 원문·학칙 원문 전체 복사 금지. 요약과 내 풀이 기록만 둔다. 과제 원문은 커밋되지 않는 `MISSION.md`에만.
+- 코디세이 과제 원문·학칙 원문 전체 복사 금지. 요약과 내 풀이 기록만 둔다. 과제 원문은 비공개 `codyssey-mission` 레포에만.
 - 개인정보(전화번호, 주소, 개인 이메일, 실제 사진 등)는 사용자가 넣기로 정하기 전까지 레포와 배포 사이트에 넣지 않는다.

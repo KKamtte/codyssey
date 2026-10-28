@@ -1,7 +1,7 @@
 # B1-1 나를 소개하는 웹페이지 처음부터 만들기
 
 > 분야: 웹 기초와 프론트엔드 · 기간: 80시간(필수, 개인 미션) · 상태: 완료
-> 원문: https://usr.codyssey.kr/learning/learningMap?projectNo=136003 → B1-1 (로컬 `MISSION.md`)
+> 원문: https://usr.codyssey.kr/learning/learningMap?projectNo=136003 → B1-1 (원문 사본: 비공개 `codyssey-mission/B1-1-self-intro-page.md`)
 > 배포: https://kkamtte.github.io/codyssey/01-ai-tools/B1-web-frontend/B1-1-self-intro-page/
 > 작업 계획·결정 사항: [wiki/plans/b1-1.md](../../../wiki/plans/b1-1.md)
 
