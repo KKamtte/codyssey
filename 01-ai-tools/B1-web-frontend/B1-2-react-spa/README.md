@@ -105,11 +105,28 @@ src/
   main.jsx          # React 시작점: <BrowserRouter>로 감싸 <App> 렌더링, 전역 CSS 불러오기
   App.jsx           # 라우트 정의: 주소 → 페이지 연결표
   pages/            # 라우트 단위 화면 (Home, CardList, CardDetail, CardNew, CardEdit, Login, NotFound)
-  components/       # 재사용 UI 컴포넌트 (Layout: 헤더·네비 + <Outlet />)
+  components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />)
+    ui/             # 데이터와 상관없는 범용 UI (아래 표)
   hooks/            # 커스텀 훅 (데이터 조회·갱신)
   lib/              # Supabase 클라이언트, 유틸
   styles/global.css # CSS 변수(색·간격)와 기본 초기화. 컴포넌트 스타일은 각 *.module.css
 ```
+
+### 재사용 UI 컴포넌트 (`src/components/ui/`)
+
+모두 prop에 따라 모양이나 동작이 달라진다. 스타일은 컴포넌트마다 `*.module.css`.
+
+| 컴포넌트 | 주요 prop | 달라지는 것 |
+|---|---|---|
+| Button | `variant`, `to`, `loading` | 색(주요/보조/삭제), `to`가 있으면 이동 링크, `loading`이면 스피너 + 비활성(제출 중) |
+| Spinner | `size` | 버튼 안(작게) / 화면 가운데(크게) |
+| Field | `label`, `error` | 라벨·에러 메시지 틀. Input·TextArea·Select가 함께 씀 |
+| Input / TextArea / Select | `label`, `error`, `value`, `onChange`, `options` | controlled 입력. `error`가 있으면 빨간 테두리 + 메시지 + `aria-invalid` |
+| Card | `to` | 상자. `to`가 있으면 상자 전체가 링크 |
+| Badge | `tone` | 꼬리표 색(분야 / 숙련도 모름·애매·앎) |
+| Loading | `message` | 로딩 상태 (`role="status"`) |
+| ErrorState | `message`, `onRetry` | 에러 상태 (`role="alert"`). `onRetry`가 있으면 "다시 시도" 버튼 |
+| EmptyState | `message`, `children` | 빈 상태. `children`으로 다음 행동 버튼을 넣음 |
 
 ### 라우트
 
@@ -128,6 +145,9 @@ src/
 - API 키는 `.env.local`에만 둔다. `.gitignore`가 `.env*`를 막고 예시 파일 `.env.example`만 커밋한다.
 - 루트 `.gitignore`(Python 템플릿)가 `lib/`를 무시해서, 이 폴더 `.gitignore`에 `!src/lib/`로 예외를 뒀다.
 - 모든 라우트를 `<Route element={<Layout />}>` 아래에 중첩했다. 헤더는 한 번만 만들고, 주소가 바뀌면 `<Outlet />` 자리의 페이지만 바뀐다.
+- 로딩/에러/빈 상태는 `Loading`·`ErrorState`·`EmptyState` 세 컴포넌트로만 그린다. 페이지마다 따로 만들지 않아 모든 화면에서 모양이 같다.
+- 입력 칸 세 종류(Input/TextArea/Select)는 라벨·에러 표시를 `Field` 하나에 맡겼다. 에러 모양을 바꿀 때 한 곳만 고치면 된다.
+- 입력 컴포넌트는 값을 스스로 들고 있지 않고 `value`/`onChange`를 부모에게서 받는다(controlled). 폼 상태는 페이지(부모)가 쥐고 검증한다.
 - 네비게이션은 `<a>` 대신 `NavLink`를 쓴다. 페이지를 새로 불러오지 않고 주소만 바꾸며, 현재 주소의 메뉴에 `active` 클래스와 `aria-current="page"`를 붙여 준다. `/`와 `/cards`는 `end`를 줘서 하위 주소(`/cards/new`)에서 함께 켜지지 않게 했다.
 
 ## 회고

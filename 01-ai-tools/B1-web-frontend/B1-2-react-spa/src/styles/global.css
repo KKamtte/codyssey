@@ -9,6 +9,11 @@
   --color-primary: #2f6feb;
   --color-primary-soft: #e7efff;
   --color-danger: #cf222e;
+  --color-danger-soft: #ffebe9;
+  --color-warning: #9a6700;
+  --color-warning-soft: #fff8c5;
+  --color-success: #1a7f37;
+  --color-success-soft: #dafbe1;
 
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
