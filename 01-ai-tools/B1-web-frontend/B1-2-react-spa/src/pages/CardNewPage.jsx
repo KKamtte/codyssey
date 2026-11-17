@@ -1,9 +1,21 @@
-// 카드 등록: 폼은 a-6 에서 붙인다
+import { useNavigate } from 'react-router-dom'
+import { createCard } from '../lib/cardsApi.js'
+import PageHeader from '../components/ui/PageHeader.jsx'
+import CardForm from '../components/cards/CardForm.jsx'
+
+// 카드 등록: 폼이 검증한 값을 받아 저장하고, 성공하면 만든 카드의 상세로 이동한다
 export default function CardNewPage() {
+  const navigate = useNavigate()
+
+  async function handleCreate(values) {
+    const card = await createCard(values) // 실패하면 throw → CardForm 이 에러를 보여준다
+    navigate(`/cards/${card.id}`)
+  }
+
   return (
     <section>
-      <h1>새 카드</h1>
-      <p>질문과 답을 입력하는 폼이 여기에 들어갑니다.</p>
+      <PageHeader title="새 카드" />
+      <CardForm submitLabel="등록" onSubmit={handleCreate} />
     </section>
   )
 }

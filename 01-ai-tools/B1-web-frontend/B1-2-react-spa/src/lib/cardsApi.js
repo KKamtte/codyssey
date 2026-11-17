@@ -9,6 +9,10 @@ function toError(error) {
   if (error.message?.includes('Failed to fetch')) {
     return new Error('네트워크 연결을 확인해 주세요.')
   }
+  // 42501: RLS 정책에 막힘 (로그인이 풀렸거나 남의 카드)
+  if (error.code === '42501') {
+    return new Error('권한이 없습니다. 로그인 상태를 확인해 주세요.')
+  }
   return new Error(`요청에 실패했습니다. (${error.message})`)
 }
 
@@ -30,5 +34,29 @@ export async function fetchCard(id) {
     .eq('id', id)
     .maybeSingle()
   if (error) throw toError(error)
+  return data
+}
+
+// 등록: DB 가 id, user_id(로그인 사용자), 생성·수정 시각을 채워 준다. 만든 카드를 돌려받아 상세로 이동할 때 쓴다
+export async function createCard({ question, answer, topic, level }) {
+  const { data, error } = await supabase
+    .from('cards')
+    .insert({ question, answer, topic, level })
+    .select()
+    .single()
+  if (error) throw toError(error)
+  return data
+}
+
+// 수정: RLS 때문에 남의 카드는 에러 없이 0줄만 바뀐다 → 돌려받은 줄이 없으면 실패로 알린다
+export async function updateCard(id, { question, answer, topic, level }) {
+  const { data, error } = await supabase
+    .from('cards')
+    .update({ question, answer, topic, level })
+    .eq('id', id)
+    .select()
+    .maybeSingle()
+  if (error) throw toError(error)
+  if (!data) throw new Error('수정할 수 없는 카드입니다. 내가 쓴 카드만 고칠 수 있습니다.')
   return data
 }

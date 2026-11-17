@@ -127,13 +127,13 @@ src/
     AuthContext.jsx # 로그인 사용자 전역 상태 (AuthProvider)
   components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />, ProtectedRoute: 로그인 필요 라우트)
     ui/             # 데이터와 상관없는 범용 UI (아래 표)
-    cards/          # 카드 데이터를 그리는 컴포넌트 (CardList, CardListItem, CardFilters, LevelBadge)
+    cards/          # 카드 데이터를 그리는 컴포넌트 (CardList, CardListItem, CardFilters, LevelBadge, CardForm)
   hooks/            # 커스텀 훅: useCards(목록), useCard(id)(상세), useAuth(로그인 사용자)
   lib/
     supabase.js     # Supabase 클라이언트 하나
-    cardsApi.js     # Supabase 요청 모음 (fetchCards, fetchCard)
+    cardsApi.js     # Supabase 요청 모음 (fetchCards, fetchCard, createCard, updateCard)
     authApi.js      # 로그인·가입·로그아웃 요청, 에러를 한국어로
-    cardOptions.js  # 숙련도 값 ↔ 이름·색
+    cardOptions.js  # 숙련도 값 ↔ 이름·색, 분야(과제 코드) 목록
     filterCards.js  # 필터 조건으로 카드 고르기 (순수 함수)
     format.js       # 날짜 표시
   styles/global.css # CSS 변수(색·간격)와 기본 초기화. 컴포넌트 스타일은 각 *.module.css
@@ -196,6 +196,9 @@ src/
 - `AuthProvider`는 처음에 저장된 세션을 읽고(`getSession`), 이후 로그인·로그아웃을 `onAuthStateChange`로 구독한다. 로그인 페이지는 성공 후 직접 이동하지 않는다. `user`가 생기면 다시 그려지면서 `<Navigate>`가 이동시킨다.
 - 보호 라우트는 세션 확인(`status: 'loading'`)이 끝나기 전에는 판단하지 않는다. 그러지 않으면 로그인한 사람도 새로고침할 때마다 로그인 화면으로 튕긴다.
 - 화면에서 버튼을 숨기는 것(내 카드만 "수정")은 편의일 뿐이고, 실제 권한은 DB의 RLS가 막는다.
+- 등록과 수정은 같은 `CardForm`을 쓴다. 폼은 입력값·검증 에러·제출 중 상태를 갖고, "어디에 저장할지"는 부모 페이지가 `onSubmit`으로 넘긴다(등록: `createCard`, 수정: `updateCard`). 저장 함수가 throw하면 폼이 실패 메시지를 보여준다.
+- 답 입력칸 옆 미리보기는 따로 상태를 두지 않는다. 입력할 때마다 `values.answer`가 바뀌어 다시 렌더링되고, 미리보기는 같은 값을 그린다(상태 → 렌더링 지점).
+- 수정은 RLS 때문에 남의 카드면 에러 없이 0줄이 바뀐다. 그래서 돌려받은 줄이 없으면 실패로 바꿔 알린다.
 - 서버에서 온 데이터(`cards`)는 훅이, 화면 조건(필터, 답 보기 여부)은 그 화면을 쓰는 페이지가 state로 가진다. 필터 입력 칸(CardFilters)은 값을 들고 있지 않고 props로 받는다(상태 끌어올리기).
 - Supabase 요청은 `lib/cardsApi.js`에만 둔다. supabase-js는 실패해도 throw하지 않고 `{ error }`를 돌려주므로, 여기서 throw로 바꿔 훅이 `.catch` 한 가지 방식으로 실패를 다루게 했다.
 - `/cards/abc`처럼 숫자가 아닌 id는 요청하지 않고 바로 "찾을 수 없음"으로 보여준다(DB에 보내면 형식 에러가 난다).
