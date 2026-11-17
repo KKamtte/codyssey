@@ -102,18 +102,33 @@ npm run build                # dist/ 에 빌드
 index.html          # <div id="root"> 하나뿐인 SPA 진입 HTML
 vite.config.js
 src/
-  main.jsx          # React 시작점: <BrowserRouter>로 감싸 <App> 렌더링
-  App.jsx           # 라우트 정의 (a-2)
-  pages/            # 라우트 단위 화면
-  components/       # 재사용 UI 컴포넌트
+  main.jsx          # React 시작점: <BrowserRouter>로 감싸 <App> 렌더링, 전역 CSS 불러오기
+  App.jsx           # 라우트 정의: 주소 → 페이지 연결표
+  pages/            # 라우트 단위 화면 (Home, CardList, CardDetail, CardNew, CardEdit, Login, NotFound)
+  components/       # 재사용 UI 컴포넌트 (Layout: 헤더·네비 + <Outlet />)
   hooks/            # 커스텀 훅 (데이터 조회·갱신)
   lib/              # Supabase 클라이언트, 유틸
+  styles/global.css # CSS 변수(색·간격)와 기본 초기화. 컴포넌트 스타일은 각 *.module.css
 ```
+
+### 라우트
+
+| 주소 | 페이지 | 비고 |
+|---|---|---|
+| `/` | HomePage | 서비스 소개 |
+| `/cards` | CardListPage | 목록 |
+| `/cards/:id` | CardDetailPage | 상세, `useParams()`로 `id`를 읽음 |
+| `/cards/new` | CardNewPage | 등록 |
+| `/cards/:id/edit` | CardEditPage | 수정 |
+| `/login` | LoginPage | 로그인·회원가입 |
+| `*` | NotFoundPage | 어느 주소에도 맞지 않을 때 |
 
 ### 주요 결정
 - `create-vite` 템플릿 대신 같은 구성을 직접 만들었다 (도구 버전 문제). 그래서 파일마다 역할을 설명할 수 있다.
 - API 키는 `.env.local`에만 둔다. `.gitignore`가 `.env*`를 막고 예시 파일 `.env.example`만 커밋한다.
 - 루트 `.gitignore`(Python 템플릿)가 `lib/`를 무시해서, 이 폴더 `.gitignore`에 `!src/lib/`로 예외를 뒀다.
+- 모든 라우트를 `<Route element={<Layout />}>` 아래에 중첩했다. 헤더는 한 번만 만들고, 주소가 바뀌면 `<Outlet />` 자리의 페이지만 바뀐다.
+- 네비게이션은 `<a>` 대신 `NavLink`를 쓴다. 페이지를 새로 불러오지 않고 주소만 바꾸며, 현재 주소의 메뉴에 `active` 클래스와 `aria-current="page"`를 붙여 준다. `/`와 `/cards`는 `end`를 줘서 하위 주소(`/cards/new`)에서 함께 켜지지 않게 했다.
 
 ## 회고
 

@@ -1,0 +1,58 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-lg);
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.logo {
+  margin-right: auto;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--color-text);
+}
+
+/* 지금 주소와 같은 메뉴: NavLink 가 isActive 를 알려주면 이 클래스를 붙인다 */
+.active {
+  color: var(--color-primary);
+  font-weight: 700;
+  background-color: var(--color-primary-soft);
+}
+
+.main {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md) var(--space-xl);
+}
