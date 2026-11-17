@@ -51,6 +51,21 @@
   background-color: var(--color-primary-soft);
 }
 
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.email {
+  max-width: 12rem;
+  overflow: hidden;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .main {
   max-width: var(--container);
   margin: 0 auto;

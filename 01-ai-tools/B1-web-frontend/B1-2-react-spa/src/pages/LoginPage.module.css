@@ -1,0 +1,33 @@
+.page {
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.modes {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.formError,
+.notice {
+  margin: 0 0 var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius);
+}
+
+.formError {
+  color: var(--color-danger);
+  background-color: var(--color-danger-soft);
+}
+
+.notice {
+  color: var(--color-success);
+  background-color: var(--color-success-soft);
+}
+
+.help {
+  margin-top: var(--space-lg);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}

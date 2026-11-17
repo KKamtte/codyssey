@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useCard } from '../hooks/useCard.js'
+import { useAuth } from '../hooks/useAuth.js'
 import { formatDate } from '../lib/format.js'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -14,10 +15,12 @@ import LevelBadge from '../components/cards/LevelBadge.jsx'
 import styles from './CardDetailPage.module.css'
 
 // 카드 상세. 주소의 :id 로 카드를 불러온다.
+// 수정 버튼은 내가 쓴 카드일 때만 보인다 (DB 의 RLS 도 작성자만 수정을 허용한다).
 // 답은 처음에 가려 두고, "답 보기"를 누르면 showAnswer 가 바뀌어 답이 나타난다 (스스로 떠올려 본 뒤 확인)
 export default function CardDetailPage() {
   const { id } = useParams()
   const { status, card, error, reload } = useCard(id)
+  const { user } = useAuth()
   const [showAnswer, setShowAnswer] = useState(false)
 
   if (status === 'loading') {
@@ -37,7 +40,9 @@ export default function CardDetailPage() {
   return (
     <article>
       <PageHeader title={card.question}>
-        <Button variant="secondary" to={`/cards/${card.id}/edit`}>수정</Button>
+        {user && user.id === card.user_id && (
+          <Button variant="secondary" to={`/cards/${card.id}/edit`}>수정</Button>
+        )}
       </PageHeader>
 
       <div className={styles.meta}>

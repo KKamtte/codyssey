@@ -1,4 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth.js'
+import { signOut } from '../lib/authApi.js'
+import Button from './ui/Button.jsx'
 import styles from './Layout.module.css'
 
 // end: true 는 주소가 정확히 같을 때만 활성으로 본다.
@@ -7,7 +10,6 @@ const NAV_ITEMS = [
   { to: '/', label: '홈', end: true },
   { to: '/cards', label: '카드 목록', end: true },
   { to: '/cards/new', label: '새 카드' },
-  { to: '/login', label: '로그인' },
 ]
 
 function navLinkClass({ isActive }) {
@@ -16,6 +18,16 @@ function navLinkClass({ isActive }) {
 
 // 모든 페이지에 공통으로 쓰는 틀: 위에 헤더(네비게이션), 아래 <Outlet /> 자리에 현재 주소의 페이지가 들어간다
 export default function Layout() {
+  const { status, user } = useAuth()
+
+  // 로그아웃하면 AuthContext 의 user 가 null 로 바뀌어 헤더가 "로그인" 링크로 다시 그려진다.
+  // 보호 라우트(등록·수정)에 있었다면 ProtectedRoute 가 로그인 화면으로 보낸다
+  function handleSignOut() {
+    signOut().catch(() => {
+      // 네트워크 문제로 실패해도 다음 요청 때 다시 확인되므로 화면은 그대로 둔다
+    })
+  }
+
   return (
     <>
       <header className={styles.header}>
@@ -28,6 +40,18 @@ export default function Layout() {
               </li>
             ))}
           </ul>
+          {status === 'ready' && (
+            <div className={styles.account}>
+              {user ? (
+                <>
+                  <span className={styles.email}>{user.email}</span>
+                  <Button variant="secondary" onClick={handleSignOut}>로그아웃</Button>
+                </>
+              ) : (
+                <NavLink className={navLinkClass} to="/login">로그인</NavLink>
+              )}
+            </div>
+          )}
         </nav>
       </header>
       <main className={styles.main}>

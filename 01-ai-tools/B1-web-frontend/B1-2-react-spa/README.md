@@ -123,13 +123,16 @@ src/
   main.jsx          # React 시작점: <BrowserRouter>로 감싸 <App> 렌더링, 전역 CSS 불러오기
   App.jsx           # 라우트 정의: 주소 → 페이지 연결표
   pages/            # 라우트 단위 화면 (Home, CardList, CardDetail, CardNew, CardEdit, Login, NotFound)
-  components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />)
+  contexts/
+    AuthContext.jsx # 로그인 사용자 전역 상태 (AuthProvider)
+  components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />, ProtectedRoute: 로그인 필요 라우트)
     ui/             # 데이터와 상관없는 범용 UI (아래 표)
     cards/          # 카드 데이터를 그리는 컴포넌트 (CardList, CardListItem, CardFilters, LevelBadge)
-  hooks/            # 커스텀 훅: useCards(목록), useCard(id)(상세)
+  hooks/            # 커스텀 훅: useCards(목록), useCard(id)(상세), useAuth(로그인 사용자)
   lib/
     supabase.js     # Supabase 클라이언트 하나
     cardsApi.js     # Supabase 요청 모음 (fetchCards, fetchCard)
+    authApi.js      # 로그인·가입·로그아웃 요청, 에러를 한국어로
     cardOptions.js  # 숙련도 값 ↔ 이름·색
     filterCards.js  # 필터 조건으로 카드 고르기 (순수 함수)
     format.js       # 날짜 표시
@@ -174,9 +177,9 @@ src/
 | `/` | HomePage | 서비스 소개, 숙련도별 카드 수 (`useCards` 재사용) |
 | `/cards` | CardListPage | 목록, 분야·숙련도·검색 필터 |
 | `/cards/:id` | CardDetailPage | 상세, `useParams()`로 `id`를 읽음. 답 가리기/보기 |
-| `/cards/new` | CardNewPage | 등록 |
-| `/cards/:id/edit` | CardEditPage | 수정 |
-| `/login` | LoginPage | 로그인·회원가입 |
+| `/cards/new` | CardNewPage | 등록 (로그인 필요) |
+| `/cards/:id/edit` | CardEditPage | 수정 (로그인 필요) |
+| `/login` | LoginPage | 로그인·회원가입. 로그인되면 원래 가려던 주소(없으면 목록)로 이동 |
 | `*` | NotFoundPage | 어느 주소에도 맞지 않을 때 |
 
 ### 주요 결정
@@ -189,6 +192,10 @@ src/
 - 로딩/에러/빈 상태는 `Loading`·`ErrorState`·`EmptyState` 세 컴포넌트로만 그린다. 페이지마다 따로 만들지 않아 모든 화면에서 모양이 같다.
 - 입력 칸 세 종류(Input/TextArea/Select)는 라벨·에러 표시를 `Field` 하나에 맡겼다. 에러 모양을 바꿀 때 한 곳만 고치면 된다.
 - 입력 컴포넌트는 값을 스스로 들고 있지 않고 `value`/`onChange`를 부모에게서 받는다(controlled). 폼 상태는 페이지(부모)가 쥐고 검증한다.
+- 로그인 사용자는 `AuthContext`(전역 상태)에 둔다. 헤더·보호 라우트·상세 페이지가 모두 필요로 하는데, props로 내려 주면 중간 컴포넌트가 쓰지도 않는 값을 계속 전달해야 한다(props drilling).
+- `AuthProvider`는 처음에 저장된 세션을 읽고(`getSession`), 이후 로그인·로그아웃을 `onAuthStateChange`로 구독한다. 로그인 페이지는 성공 후 직접 이동하지 않는다. `user`가 생기면 다시 그려지면서 `<Navigate>`가 이동시킨다.
+- 보호 라우트는 세션 확인(`status: 'loading'`)이 끝나기 전에는 판단하지 않는다. 그러지 않으면 로그인한 사람도 새로고침할 때마다 로그인 화면으로 튕긴다.
+- 화면에서 버튼을 숨기는 것(내 카드만 "수정")은 편의일 뿐이고, 실제 권한은 DB의 RLS가 막는다.
 - 서버에서 온 데이터(`cards`)는 훅이, 화면 조건(필터, 답 보기 여부)은 그 화면을 쓰는 페이지가 state로 가진다. 필터 입력 칸(CardFilters)은 값을 들고 있지 않고 props로 받는다(상태 끌어올리기).
 - Supabase 요청은 `lib/cardsApi.js`에만 둔다. supabase-js는 실패해도 throw하지 않고 `{ error }`를 돌려주므로, 여기서 throw로 바꿔 훅이 `.catch` 한 가지 방식으로 실패를 다루게 했다.
 - `/cards/abc`처럼 숫자가 아닌 id는 요청하지 않고 바로 "찾을 수 없음"으로 보여준다(DB에 보내면 형식 에러가 난다).
