@@ -16,3 +16,6 @@
 
 ## [2026-10-22] mission | B1-1 완료
 - GitHub Pages 배포(https://kkamtte.github.io/codyssey/01-ai-tools/B1-web-frontend/B1-1-self-intro-page/), README 회고·스크린샷. 배운 개념 [[semantic-html]], [[flexbox-vs-grid]], [[dom-event-state-render]], [[es6-syntax]], [[fetch-async-ui-state]]. 계획 [[b1-1]] done. 코디세이 제출은 사용자가 직접.
+
+## [2026-10-27] mission | B1-2 시작
+- 원문 받아 `01-ai-tools/B1-web-frontend/B1-2-react-spa/`에 README(요약·요구사항 체크리스트) 작성. React SPA(라우트 5개+, 재사용 컴포넌트 8개+) + Supabase/Firebase CRUD + Vercel/Netlify 배포. 계획 [[b1-2]].
