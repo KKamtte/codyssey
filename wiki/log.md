@@ -19,3 +19,6 @@
 
 ## [2026-10-27] mission | B1-2 시작
 - 원문 받아 `01-ai-tools/B1-web-frontend/B1-2-react-spa/`에 README(요약·요구사항 체크리스트) 작성. React SPA(라우트 5개+, 재사용 컴포넌트 8개+) + Supabase/Firebase CRUD + Vercel/Netlify 배포. 계획 [[b1-2]].
+
+## [2026-11-17] mission | B1-2 주제 변경과 결정 사항 확정
+- 주제를 학습 위키 뷰어/에디터에서 **문답 카드**로 바꿈: 레포 `wiki/`와 앱의 Supabase 사본이 서로 반영되지 않아 원천이 두 개가 되는 문제. 스타일(CSS Modules), 보너스 전부(Auth·Context·메모이제이션), Vercel, 라우트·권한까지 구현 전에 모두 정함. [[b1-2]]

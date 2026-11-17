@@ -4,11 +4,11 @@
 > 원문: https://usr.codyssey.kr/learning/learningMap?projectNo=136003 → B1-2 (원문 사본: 비공개 `codyssey-mission/B1-2-react-spa.md`)
 > 작업 계획·결정 사항: [wiki/plans/b1-2.md](../../../wiki/plans/b1-2.md)
 
-## 만드는 것: LLM Wiki
+## 만드는 것: 문답 카드
 
-내 학습 위키(Karpathy LLM Wiki 패턴, 레포의 `wiki/`)를 웹에서 보고 고치는 SPA.
-핵심 데이터는 **위키 페이지** 한 종류(제목, slug, 종류, 마크다운 본문, 수정일)이고, Supabase에 저장해 CRUD한다.
-LLM 호출 기능은 넣지 않는다 (API 키를 브라우저에 둘 수 없고 서버 구현은 과제 범위 밖).
+동료 평가를 대비해 "설명할 수 있어야 하는 질문"과 내 답을 카드로 모아 복습하는 SPA.
+핵심 데이터는 **문답 카드** 한 종류(질문, 답(마크다운), 분야(과제 코드), 숙련도 모름/애매/앎)이고, Supabase에 저장해 CRUD한다.
+누구나 카드를 볼 수 있고, 로그인하면 카드를 등록하고 내가 쓴 카드만 고치거나 지울 수 있다.
 
 ## 과제 요약
 
@@ -91,7 +91,10 @@ npm run build                # dist/ 에 빌드
 | UI | React 19 (JavaScript) | 과제 기준 React 18 이상. TypeScript는 가산점이 없어 설명할 범위를 React에 집중 |
 | 빌드 | Vite 8 | 개발 서버가 빠르고 설정이 `vite.config.js` 한 파일 |
 | 라우팅 | React Router 7 | `BrowserRouter`로 URL과 화면을 연결 |
-| 백엔드 | Supabase | 테이블 하나로 CRUD, SQL로 구조가 보임, 보너스 Auth 연결이 쉬움 |
+| 백엔드 | Supabase (DB + Auth) | 테이블 하나로 CRUD, SQL로 구조가 보임, 로그인 연결이 쉬움 |
+| 스타일 | CSS Modules + CSS 변수 | 컴포넌트마다 스타일 파일을 둬 컴포넌트 단위로 관리, 클래스 이름 충돌 없음, Vite 기본 지원 |
+| 마크다운 | react-markdown | 답 미리보기·상세 표시. HTML 문자열을 직접 넣지 않아 XSS 걱정이 없음 |
+| 배포 | Vercel | GitHub 연결, 대시보드에서 환경변수 등록 |
 
 ### 구조
 
