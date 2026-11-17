@@ -125,10 +125,11 @@ src/
   pages/            # 라우트 단위 화면 (Home, CardList, CardDetail, CardNew, CardEdit, Login, NotFound)
   contexts/
     AuthContext.jsx # 로그인 사용자 전역 상태 (AuthProvider)
+    ToastContext.jsx # 저장·삭제 알림 전역 상태 (ToastProvider, 알림 목록도 여기서 그림)
   components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />, ProtectedRoute: 로그인 필요 라우트)
     ui/             # 데이터와 상관없는 범용 UI (아래 표)
     cards/          # 카드 데이터를 그리는 컴포넌트 (CardList, CardListItem, CardFilters, LevelBadge, CardForm, DeleteCardButton)
-  hooks/            # 커스텀 훅: useCards(목록), useCard(id)(상세), useAuth(로그인 사용자)
+  hooks/            # 커스텀 훅: useCards(목록), useCard(id)(상세), useAuth(로그인 사용자), useToast(알림 띄우기)
   lib/
     supabase.js     # Supabase 클라이언트 하나
     cardsApi.js     # Supabase 요청 모음 (fetchCards, fetchCard, createCard, updateCard, deleteCard)
@@ -156,6 +157,7 @@ src/
 | EmptyState | `message`, `children` | 빈 상태. `children`으로 다음 행동 버튼을 넣음 |
 | PageHeader | `title`, `children` | 페이지 제목 줄. 오른쪽에 버튼을 넣음 |
 | MarkdownView | `children` | 마크다운 글을 그림 (react-markdown, HTML 문자열을 넣지 않아 XSS 없음) |
+| ToastList | `toasts`, `onDismiss` | 알림을 화면 아래에 쌓아 그림. `tone`에 따라 초록(성공)/빨강(실패) |
 
 ### 데이터 흐름 (조회)
 
@@ -179,7 +181,19 @@ src/
 | 3 | "답 보기 / 답 가리기" | `showAnswer` (CardDetailPage) | 답이 나타나거나 가려짐, 버튼 문구 |
 | 4 | "삭제" → "삭제 / 취소" | `step` (DeleteCardButton) | 확인 문구와 버튼 둘 → 지우는 중 스피너 |
 | 5 | 로그인 / 로그아웃 | `user` (AuthContext) | 헤더(이메일·로그아웃 ↔ 로그인), 내 카드의 수정·삭제 버튼, 보호 라우트 |
-| 6 | 폼 제출 | `submitting`, `errors`, `formError` (CardForm·LoginPage) | 칸별 에러, 버튼 스피너·비활성, 실패 메시지 |
+| 6 | 등록·수정·삭제·로그인·로그아웃 성공 | `toasts` (ToastContext) | 화면 아래 알림이 3초 동안 떴다 사라짐 |
+| 7 | 폼 제출 | `submitting`, `errors`, `formError` (CardForm·LoginPage) | 칸별 에러, 버튼 스피너·비활성, 실패 메시지 |
+
+### 메모이제이션 (보너스)
+
+| 위치 | 방법 | 하는 일 |
+|---|---|---|
+| CardListPage | `useMemo` | `cards`·`filters`가 바뀔 때만 분야 목록과 보여줄 카드를 다시 계산 |
+| CardListItem | `React.memo` | 받은 `card`가 같은 객체면 다시 그리지 않음 |
+| MarkdownView | `React.memo` | 글이 같으면 다시 그리지 않음 (폼에서 질문을 칠 때 답 미리보기를 다시 해석하지 않음) |
+| ToastContext | `useCallback`, `useMemo` | `showToast`와 Context 값을 같은 것으로 유지해, 알림이 뜨고 사라져도 `showToast`만 쓰는 페이지가 다시 그려지지 않음 |
+
+확인: 목록에서 숙련도 필터를 "전체 → 애매"로 바꾸면 남은 카드 3장의 다시 그리기가 0번이었다. "애매 → 전체"로 바꾸면 새로 나타난 5장만 그려졌다(개발 모드 StrictMode가 두 번씩 그려 10번).
 
 ### 라우트
 

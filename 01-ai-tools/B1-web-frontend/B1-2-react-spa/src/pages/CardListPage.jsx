@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useCards } from '../hooks/useCards.js'
 import { ALL } from '../lib/cardOptions.js'
 import { collectTopics, filterCards } from '../lib/filterCards.js'
@@ -19,6 +19,11 @@ export default function CardListPage() {
   const { status, cards, error, reload } = useCards()
   const [filters, setFilters] = useState(INITIAL_FILTERS)
 
+  // useMemo: cards 나 filters 가 바뀔 때만 다시 계산한다.
+  // 다른 이유(예: 로그인 상태 변화)로 이 페이지가 다시 그려질 때는 계산하지 않고 이전 결과를 그대로 쓴다
+  const topics = useMemo(() => collectTopics(cards), [cards])
+  const visibleCards = useMemo(() => filterCards(cards, filters), [cards, filters])
+
   function renderContent() {
     if (status === 'loading') {
       return <Loading message="카드를 불러오는 중..." />
@@ -34,11 +39,9 @@ export default function CardListPage() {
       )
     }
 
-    const visibleCards = filterCards(cards, filters)
-
     return (
       <>
-        <CardFilters topics={collectTopics(cards)} filters={filters} onChange={setFilters} />
+        <CardFilters topics={topics} filters={filters} onChange={setFilters} />
         <p className={styles.count} aria-live="polite">전체 {cards.length}장 중 {visibleCards.length}장</p>
         {visibleCards.length > 0 ? (
           <CardList cards={visibleCards} />

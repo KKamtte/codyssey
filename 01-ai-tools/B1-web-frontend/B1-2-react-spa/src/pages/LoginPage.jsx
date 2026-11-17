@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { signIn, signUp } from '../lib/authApi.js'
+import { useToast } from '../hooks/useToast.js'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import Button from '../components/ui/Button.jsx'
 import Input from '../components/ui/Input.jsx'
@@ -33,6 +34,7 @@ function validate({ email, password }) {
 // 로그인·회원가입 한 화면. mode 로 두 동작을 바꾼다
 export default function LoginPage() {
   const { user } = useAuth()
+  const { showToast } = useToast()
   const location = useLocation()
   const [mode, setMode] = useState('signIn')
   const [values, setValues] = useState({ email: '', password: '' }) // controlled input 값
@@ -78,9 +80,12 @@ export default function LoginPage() {
     try {
       if (mode === 'signIn') {
         await signIn(values.email.trim(), values.password)
+        showToast('로그인했습니다.')
       } else {
         const loggedIn = await signUp(values.email.trim(), values.password)
-        if (!loggedIn) {
+        if (loggedIn) {
+          showToast('가입하고 로그인했습니다.')
+        } else {
           setNotice('가입 확인 메일을 보냈습니다. 메일의 링크를 누른 뒤 로그인해 주세요.')
         }
       }

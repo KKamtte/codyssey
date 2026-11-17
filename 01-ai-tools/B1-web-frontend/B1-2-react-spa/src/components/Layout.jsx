@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { signOut } from '../lib/authApi.js'
+import { useToast } from '../hooks/useToast.js'
 import Button from './ui/Button.jsx'
 import styles from './Layout.module.css'
 
@@ -19,13 +20,14 @@ function navLinkClass({ isActive }) {
 // 모든 페이지에 공통으로 쓰는 틀: 위에 헤더(네비게이션), 아래 <Outlet /> 자리에 현재 주소의 페이지가 들어간다
 export default function Layout() {
   const { status, user } = useAuth()
+  const { showToast } = useToast()
 
   // 로그아웃하면 AuthContext 의 user 가 null 로 바뀌어 헤더가 "로그인" 링크로 다시 그려진다.
   // 보호 라우트(등록·수정)에 있었다면 ProtectedRoute 가 로그인 화면으로 보낸다
   function handleSignOut() {
-    signOut().catch(() => {
-      // 네트워크 문제로 실패해도 다음 요청 때 다시 확인되므로 화면은 그대로 둔다
-    })
+    signOut()
+      .then(() => showToast('로그아웃했습니다.'))
+      .catch((error) => showToast(error.message, 'danger'))
   }
 
   return (

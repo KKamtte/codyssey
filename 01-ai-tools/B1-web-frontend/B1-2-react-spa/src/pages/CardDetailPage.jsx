@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useCard } from '../hooks/useCard.js'
 import { useAuth } from '../hooks/useAuth.js'
+import { useToast } from '../hooks/useToast.js'
 import { formatDate } from '../lib/format.js'
 import { deleteCard } from '../lib/cardsApi.js'
 import PageHeader from '../components/ui/PageHeader.jsx'
@@ -24,12 +25,14 @@ export default function CardDetailPage() {
   const { status, card, error, reload } = useCard(id)
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { showToast } = useToast()
   const [showAnswer, setShowAnswer] = useState(false)
 
   // 지운 뒤에는 목록으로. replace 로 이동해 "뒤로 가기"로 지운 카드 주소에 돌아오지 않게 한다.
   // 목록 페이지가 새로 나타나며 useCards 가 다시 불러오므로 지운 카드는 목록에서 빠진다
   async function handleDelete() {
     await deleteCard(card.id)
+    showToast('카드를 삭제했습니다.')
     navigate('/cards', { replace: true })
   }
 

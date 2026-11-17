@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useCard } from '../hooks/useCard.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { updateCard } from '../lib/cardsApi.js'
+import { useToast } from '../hooks/useToast.js'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import Button from '../components/ui/Button.jsx'
 import Loading from '../components/ui/Loading.jsx'
@@ -15,9 +16,11 @@ export default function CardEditPage() {
   const navigate = useNavigate()
   const { status, card, error, reload } = useCard(id)
   const { user } = useAuth()
+  const { showToast } = useToast()
 
   async function handleUpdate(values) {
     await updateCard(card.id, values)
+    showToast('수정한 내용을 저장했습니다.')
     navigate(`/cards/${card.id}`)
   }
 
