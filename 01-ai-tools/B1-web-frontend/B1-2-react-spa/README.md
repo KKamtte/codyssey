@@ -79,10 +79,25 @@ React로 라우팅이 있는 SPA 하나를 만들고, 핵심 데이터 한 종�
 ```bash
 cd 01-ai-tools/B1-web-frontend/B1-2-react-spa
 npm install
-cp .env.example .env.local   # Supabase URL/Key 채우기
+cp .env.example .env.local   # Supabase Project URL 과 publishable 키 채우기
 npm run dev                  # http://localhost:5173
 npm run build                # dist/ 에 빌드
 ```
+
+Supabase 준비(처음 한 번): 대시보드 SQL Editor 에서 `supabase/schema.sql`(테이블·권한) → `supabase/seed.sql`(예시 카드 8장) 순서로 실행한다.
+
+### 데이터 (`cards` 테이블)
+
+| 컬럼 | 내용 |
+|---|---|
+| `id` | 자동 증가 번호. 상세 주소 `/cards/:id` |
+| `question`, `answer` | 질문과 내 답(마크다운). 빈 값이면 DB가 거부 |
+| `topic` | 분야(과제 코드 `B1-1`, `B1-2` …) |
+| `level` | 숙련도 `unknown`(모름) / `unsure`(애매) / `known`(앎) |
+| `user_id` | 작성자. 로그인 사용자가 등록하면 DB가 `auth.uid()`로 채움 |
+| `created_at`, `updated_at` | 생성·수정 시각. 수정 시각은 트리거가 갱신 |
+
+권한은 RLS 정책으로 DB가 직접 검사한다: 조회는 누구나, 등록은 로그인 사용자, 수정·삭제는 작성자 본인만.
 
 ### 기술 스택
 
@@ -101,6 +116,9 @@ npm run build                # dist/ 에 빌드
 ```
 index.html          # <div id="root"> 하나뿐인 SPA 진입 HTML
 vite.config.js
+supabase/
+  schema.sql        # 테이블·트리거·권한(RLS) — SQL Editor 에서 실행
+  seed.sql          # 예시 카드 8장
 src/
   main.jsx          # React 시작점: <BrowserRouter>로 감싸 <App> 렌더링, 전역 CSS 불러오기
   App.jsx           # 라우트 정의: 주소 → 페이지 연결표
@@ -108,7 +126,7 @@ src/
   components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />)
     ui/             # 데이터와 상관없는 범용 UI (아래 표)
   hooks/            # 커스텀 훅 (데이터 조회·갱신)
-  lib/              # Supabase 클라이언트, 유틸
+  lib/              # Supabase 클라이언트(supabase.js), 유틸
   styles/global.css # CSS 변수(색·간격)와 기본 초기화. 컴포넌트 스타일은 각 *.module.css
 ```
 
@@ -143,6 +161,8 @@ src/
 ### 주요 결정
 - `create-vite` 템플릿 대신 같은 구성을 직접 만들었다 (도구 버전 문제). 그래서 파일마다 역할을 설명할 수 있다.
 - API 키는 `.env.local`에만 둔다. `.gitignore`가 `.env*`를 막고 예시 파일 `.env.example`만 커밋한다.
+- 브라우저에는 공개용 **publishable 키**만 둔다. 서버 전용 secret 키는 RLS를 무시하므로 쓰지 않는다. 대신 "누가 무엇을 할 수 있나"는 DB의 RLS 정책이 막는다(공개 키로는 조회만 되고 등록은 거부, 수정·삭제는 0줄).
+- 테이블 구조와 정책을 SQL 파일로 레포에 남겼다. 대시보드에서 클릭으로 만들면 어떻게 만들었는지 남지 않는다.
 - 루트 `.gitignore`(Python 템플릿)가 `lib/`를 무시해서, 이 폴더 `.gitignore`에 `!src/lib/`로 예외를 뒀다.
 - 모든 라우트를 `<Route element={<Layout />}>` 아래에 중첩했다. 헤더는 한 번만 만들고, 주소가 바뀌면 `<Outlet />` 자리의 페이지만 바뀐다.
 - 로딩/에러/빈 상태는 `Loading`·`ErrorState`·`EmptyState` 세 컴포넌트로만 그린다. 페이지마다 따로 만들지 않아 모든 화면에서 모양이 같다.
