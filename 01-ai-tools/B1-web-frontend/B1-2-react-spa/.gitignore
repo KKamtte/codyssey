@@ -1,0 +1,11 @@
+# 의존성·빌드 결과
+node_modules/
+dist/
+
+# 환경변수: Supabase URL/Key 는 .env.local 에만 둔다 (.env.example 은 커밋)
+.env
+.env.*
+!.env.example
+
+# 루트 .gitignore 의 Python 템플릿 규칙(lib/)을 이 과제에서는 풀어준다
+!src/lib/
