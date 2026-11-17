@@ -1,0 +1,5 @@
+.count {
+  margin: 0 0 var(--space-md);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}

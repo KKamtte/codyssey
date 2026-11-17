@@ -1,14 +1,71 @@
-import { Link, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { useCard } from '../hooks/useCard.js'
+import { formatDate } from '../lib/format.js'
+import PageHeader from '../components/ui/PageHeader.jsx'
+import Button from '../components/ui/Button.jsx'
+import Badge from '../components/ui/Badge.jsx'
+import Card from '../components/ui/Card.jsx'
+import Loading from '../components/ui/Loading.jsx'
+import ErrorState from '../components/ui/ErrorState.jsx'
+import EmptyState from '../components/ui/EmptyState.jsx'
+import MarkdownView from '../components/ui/MarkdownView.jsx'
+import LevelBadge from '../components/cards/LevelBadge.jsx'
+import styles from './CardDetailPage.module.css'
 
-// 카드 상세: 주소의 :id 를 useParams 로 읽는다. 실제 카드 조회는 a-5 에서 붙인다
+// 카드 상세. 주소의 :id 로 카드를 불러온다.
+// 답은 처음에 가려 두고, "답 보기"를 누르면 showAnswer 가 바뀌어 답이 나타난다 (스스로 떠올려 본 뒤 확인)
 export default function CardDetailPage() {
   const { id } = useParams()
+  const { status, card, error, reload } = useCard(id)
+  const [showAnswer, setShowAnswer] = useState(false)
+
+  if (status === 'loading') {
+    return <Loading message="카드를 불러오는 중..." />
+  }
+  if (status === 'error') {
+    return <ErrorState message={error.message} onRetry={reload} />
+  }
+  if (status === 'notFound') {
+    return (
+      <EmptyState message="카드를 찾을 수 없습니다. 지워졌거나 주소가 잘못되었습니다.">
+        <Button variant="secondary" to="/cards">목록으로</Button>
+      </EmptyState>
+    )
+  }
 
   return (
-    <section>
-      <h1>카드 #{id}</h1>
-      <p>카드의 질문과 답이 여기에 표시됩니다.</p>
-      <p><Link to={`/cards/${id}/edit`}>수정하기</Link></p>
-    </section>
+    <article>
+      <PageHeader title={card.question}>
+        <Button variant="secondary" to={`/cards/${card.id}/edit`}>수정</Button>
+      </PageHeader>
+
+      <div className={styles.meta}>
+        <Badge>{card.topic}</Badge>
+        <LevelBadge level={card.level} />
+        <span className={styles.date}>만든 날 {formatDate(card.created_at)} · 고친 날 {formatDate(card.updated_at)}</span>
+      </div>
+
+      <Card>
+        <div className={styles.answerHeader}>
+          <h2 className={styles.answerTitle}>내 답</h2>
+          <Button
+            variant="secondary"
+            aria-expanded={showAnswer}
+            aria-controls="card-answer"
+            onClick={() => setShowAnswer((shown) => !shown)}
+          >
+            {showAnswer ? '답 가리기' : '답 보기'}
+          </Button>
+        </div>
+        <div id="card-answer">
+          {showAnswer ? <MarkdownView>{card.answer}</MarkdownView> : <p className={styles.hidden}>먼저 스스로 답을 떠올려 본 뒤 열어 보세요.</p>}
+        </div>
+      </Card>
+
+      <p className={styles.back}>
+        <Button variant="secondary" to="/cards">목록으로</Button>
+      </p>
+    </article>
   )
 }
