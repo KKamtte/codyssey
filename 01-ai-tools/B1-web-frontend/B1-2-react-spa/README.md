@@ -127,11 +127,11 @@ src/
     AuthContext.jsx # 로그인 사용자 전역 상태 (AuthProvider)
   components/       # 재사용 컴포넌트 (Layout: 헤더·네비 + <Outlet />, ProtectedRoute: 로그인 필요 라우트)
     ui/             # 데이터와 상관없는 범용 UI (아래 표)
-    cards/          # 카드 데이터를 그리는 컴포넌트 (CardList, CardListItem, CardFilters, LevelBadge, CardForm)
+    cards/          # 카드 데이터를 그리는 컴포넌트 (CardList, CardListItem, CardFilters, LevelBadge, CardForm, DeleteCardButton)
   hooks/            # 커스텀 훅: useCards(목록), useCard(id)(상세), useAuth(로그인 사용자)
   lib/
     supabase.js     # Supabase 클라이언트 하나
-    cardsApi.js     # Supabase 요청 모음 (fetchCards, fetchCard, createCard, updateCard)
+    cardsApi.js     # Supabase 요청 모음 (fetchCards, fetchCard, createCard, updateCard, deleteCard)
     authApi.js      # 로그인·가입·로그아웃 요청, 에러를 한국어로
     cardOptions.js  # 숙련도 값 ↔ 이름·색, 분야(과제 코드) 목록
     filterCards.js  # 필터 조건으로 카드 고르기 (순수 함수)
@@ -170,6 +170,17 @@ src/
 - 정리 함수(`ignore = true`)로, 응답이 오기 전에 화면을 떠나거나 다시 요청하면 늦게 온 옛 응답을 버린다.
 - 목록 필터는 서버에 다시 묻지 않는다. 받아 온 `cards`는 그대로 두고, 필터 state가 바뀔 때마다 `filterCards()`로 보여줄 카드만 다시 계산한다.
 
+### 상태 → 렌더링 지점
+
+| # | 사용자 이벤트 | 바뀌는 상태 (위치) | 바뀌는 화면 |
+|---|---|---|---|
+| 1 | 분야·숙련도 선택, 검색어 입력 | `filters` (CardListPage) | 목록이 조건에 맞는 카드만, "전체 N장 중 M장" |
+| 2 | 답 입력 | `values.answer` (CardForm) | 옆 미리보기가 같은 내용을 마크다운으로 |
+| 3 | "답 보기 / 답 가리기" | `showAnswer` (CardDetailPage) | 답이 나타나거나 가려짐, 버튼 문구 |
+| 4 | "삭제" → "삭제 / 취소" | `step` (DeleteCardButton) | 확인 문구와 버튼 둘 → 지우는 중 스피너 |
+| 5 | 로그인 / 로그아웃 | `user` (AuthContext) | 헤더(이메일·로그아웃 ↔ 로그인), 내 카드의 수정·삭제 버튼, 보호 라우트 |
+| 6 | 폼 제출 | `submitting`, `errors`, `formError` (CardForm·LoginPage) | 칸별 에러, 버튼 스피너·비활성, 실패 메시지 |
+
 ### 라우트
 
 | 주소 | 페이지 | 비고 |
@@ -198,7 +209,9 @@ src/
 - 화면에서 버튼을 숨기는 것(내 카드만 "수정")은 편의일 뿐이고, 실제 권한은 DB의 RLS가 막는다.
 - 등록과 수정은 같은 `CardForm`을 쓴다. 폼은 입력값·검증 에러·제출 중 상태를 갖고, "어디에 저장할지"는 부모 페이지가 `onSubmit`으로 넘긴다(등록: `createCard`, 수정: `updateCard`). 저장 함수가 throw하면 폼이 실패 메시지를 보여준다.
 - 답 입력칸 옆 미리보기는 따로 상태를 두지 않는다. 입력할 때마다 `values.answer`가 바뀌어 다시 렌더링되고, 미리보기는 같은 값을 그린다(상태 → 렌더링 지점).
-- 수정은 RLS 때문에 남의 카드면 에러 없이 0줄이 바뀐다. 그래서 돌려받은 줄이 없으면 실패로 바꿔 알린다.
+- 수정·삭제는 RLS 때문에 남의 카드면 에러 없이 0줄이 바뀐다. 그래서 돌려받은 줄이 없으면 실패로 바꿔 알린다.
+- 삭제 확인은 브라우저 `confirm()` 창 대신 상태(`idle` → `confirming` → `deleting`)로 버튼 모양을 바꿔 묻는다. 화면 흐름이 React 상태로 보이고, 창이 페이지를 멈추지 않는다.
+- 삭제 후에는 `navigate('/cards', { replace: true })`로 목록에 간다. "뒤로 가기"로 지운 카드 주소에 돌아오지 않고, 목록이 새로 나타나며 `useCards`가 다시 불러와 지운 카드가 빠진다.
 - 서버에서 온 데이터(`cards`)는 훅이, 화면 조건(필터, 답 보기 여부)은 그 화면을 쓰는 페이지가 state로 가진다. 필터 입력 칸(CardFilters)은 값을 들고 있지 않고 props로 받는다(상태 끌어올리기).
 - Supabase 요청은 `lib/cardsApi.js`에만 둔다. supabase-js는 실패해도 throw하지 않고 `{ error }`를 돌려주므로, 여기서 throw로 바꿔 훅이 `.catch` 한 가지 방식으로 실패를 다루게 했다.
 - `/cards/abc`처럼 숫자가 아닌 id는 요청하지 않고 바로 "찾을 수 없음"으로 보여준다(DB에 보내면 형식 에러가 난다).

@@ -60,3 +60,14 @@ export async function updateCard(id, { question, answer, topic, level }) {
   if (!data) throw new Error('수정할 수 없는 카드입니다. 내가 쓴 카드만 고칠 수 있습니다.')
   return data
 }
+
+// 삭제: 수정과 마찬가지로 남의 카드는 에러 없이 0줄 → 지워진 줄이 없으면 실패로 알린다
+export async function deleteCard(id) {
+  const { data, error } = await supabase
+    .from('cards')
+    .delete()
+    .eq('id', id)
+    .select('id')
+  if (error) throw toError(error)
+  if (data.length === 0) throw new Error('삭제할 수 없는 카드입니다. 내가 쓴 카드만 지울 수 있습니다.')
+}

@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useCard } from '../hooks/useCard.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { formatDate } from '../lib/format.js'
+import { deleteCard } from '../lib/cardsApi.js'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import Button from '../components/ui/Button.jsx'
 import Badge from '../components/ui/Badge.jsx'
@@ -12,16 +13,25 @@ import ErrorState from '../components/ui/ErrorState.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import MarkdownView from '../components/ui/MarkdownView.jsx'
 import LevelBadge from '../components/cards/LevelBadge.jsx'
+import DeleteCardButton from '../components/cards/DeleteCardButton.jsx'
 import styles from './CardDetailPage.module.css'
 
 // 카드 상세. 주소의 :id 로 카드를 불러온다.
-// 수정 버튼은 내가 쓴 카드일 때만 보인다 (DB 의 RLS 도 작성자만 수정을 허용한다).
+// 수정·삭제 버튼은 내가 쓴 카드일 때만 보인다 (DB 의 RLS 도 작성자만 수정을 허용한다).
 // 답은 처음에 가려 두고, "답 보기"를 누르면 showAnswer 가 바뀌어 답이 나타난다 (스스로 떠올려 본 뒤 확인)
 export default function CardDetailPage() {
   const { id } = useParams()
   const { status, card, error, reload } = useCard(id)
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [showAnswer, setShowAnswer] = useState(false)
+
+  // 지운 뒤에는 목록으로. replace 로 이동해 "뒤로 가기"로 지운 카드 주소에 돌아오지 않게 한다.
+  // 목록 페이지가 새로 나타나며 useCards 가 다시 불러오므로 지운 카드는 목록에서 빠진다
+  async function handleDelete() {
+    await deleteCard(card.id)
+    navigate('/cards', { replace: true })
+  }
 
   if (status === 'loading') {
     return <Loading message="카드를 불러오는 중..." />
@@ -41,7 +51,10 @@ export default function CardDetailPage() {
     <article>
       <PageHeader title={card.question}>
         {user && user.id === card.user_id && (
-          <Button variant="secondary" to={`/cards/${card.id}/edit`}>수정</Button>
+          <>
+            <Button variant="secondary" to={`/cards/${card.id}/edit`}>수정</Button>
+            <DeleteCardButton onDelete={handleDelete} />
+          </>
         )}
       </PageHeader>
 
