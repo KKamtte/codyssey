@@ -207,6 +207,22 @@ src/
 | `/login` | LoginPage | 로그인·회원가입. 로그인되면 원래 가려던 주소(없으면 목록)로 이동 |
 | `*` | NotFoundPage | 어느 주소에도 맞지 않을 때 |
 
+### 배포 (Vercel)
+
+배포 URL: (a-11 main merge 후 기입)
+
+| 항목 | 값 |
+|---|---|
+| 플랜 · 프로젝트 | Vercel Hobby(무료) · `b1-2-qa-cards` |
+| 연결 레포 | GitHub `KKamtte/codyssey` (`main`에 push하면 자동 배포) |
+| Root Directory | `01-ai-tools/B1-web-frontend/B1-2-react-spa` (레포 하나에 과제가 여러 개라 이 폴더만 빌드) |
+| Framework Preset | Vite (빌드 `npm run build`, 결과 폴더 `dist`) |
+| 환경변수 | `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Production · Preview) |
+
+- **`vercel.json` rewrite**: 모든 주소(`/(.*)`)를 `/index.html`로 보낸다. 앱 안에서 링크로 `/cards/3`에 가는 건 React Router가 주소만 바꾸는 것이라 괜찮지만, 그 주소에서 **새로고침**하면 브라우저가 서버에 `/cards/3` 파일을 직접 요청한다. 서버에는 `index.html` 하나뿐이라 404가 난다. rewrite로 어떤 주소든 `index.html`을 돌려주면, React가 뜬 뒤 `BrowserRouter`가 주소를 읽어 맞는 페이지를 그린다.
+- **환경변수를 대시보드에 등록하는 이유**: `.env.local`은 `.gitignore`로 레포에 올라가지 않아 Vercel이 볼 수 없다. Vite는 `VITE_`로 시작하는 값을 **빌드할 때** 코드에 박아 넣으므로, 빌드하는 Vercel 쪽에 값이 있어야 한다.
+- 이 키는 브라우저로 내려가는 공개용 키다. 숨길 수 있는 값이 아니고, 데이터 보호는 DB의 RLS 정책이 맡는다.
+
 ### 주요 결정
 - `create-vite` 템플릿 대신 같은 구성을 직접 만들었다 (도구 버전 문제). 그래서 파일마다 역할을 설명할 수 있다.
 - API 키는 `.env.local`에만 둔다. `.gitignore`가 `.env*`를 막고 예시 파일 `.env.example`만 커밋한다.
