@@ -3,6 +3,7 @@
 위키 전체 목차. 규칙은 [[AGENTS]] 참고.
 
 ## Plans - 열린 항목
+- [[b1-2]] — B1-2 React SPA 문답 카드(라우팅, CRUD, Supabase Auth, Vercel 배포): 작업 단계와 결정 사항
 - [[review-quiz]] — push 전 문답 방식 계획, 집에서 개인 계정으로 확인할 체크리스트
 
 ## Plans - 완료
@@ -25,3 +26,4 @@
 
 ## Analyses
 - [[b1-1-review-qa]] — B1-1 push 전 문답 기록 (6문항, 꼬리 질문, 다시 볼 것)
+- [[b1-2-review-qa]] — B1-2 push 전 문답 기록 (8문항, 과제 목표 5개 + 보호 라우트·배포·권한)

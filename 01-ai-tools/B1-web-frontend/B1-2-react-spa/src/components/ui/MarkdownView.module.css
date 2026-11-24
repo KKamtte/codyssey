@@ -1,0 +1,29 @@
+.markdown {
+  overflow-wrap: anywhere;
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown code {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  background-color: var(--color-bg);
+}
+
+.markdown pre {
+  overflow-x: auto;
+  padding: var(--space-md);
+  border-radius: var(--radius);
+  background-color: var(--color-bg);
+}
+
+.markdown pre code {
+  padding: 0;
+}

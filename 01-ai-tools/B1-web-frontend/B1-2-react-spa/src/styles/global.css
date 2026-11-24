@@ -1,0 +1,51 @@
+/* 전역 스타일: 색·간격 같은 디자인 값(CSS 변수)과 기본 초기화만 둔다.
+   컴포넌트별 스타일은 각 컴포넌트 옆의 *.module.css 에 둔다. */
+:root {
+  --color-bg: #f7f7f5;
+  --color-surface: #ffffff;
+  --color-text: #1f2328;
+  --color-text-muted: #59636e;
+  --color-border: #d8dee4;
+  --color-primary: #2f6feb;
+  --color-primary-soft: #e7efff;
+  --color-danger: #cf222e;
+  --color-danger-soft: #ffebe9;
+  --color-warning: #9a6700;
+  --color-warning-soft: #fff8c5;
+  --color-success: #1a7f37;
+  --color-success-soft: #dafbe1;
+
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  --radius: 8px;
+  --container: 960px;
+  --font-sans: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.3;
+}

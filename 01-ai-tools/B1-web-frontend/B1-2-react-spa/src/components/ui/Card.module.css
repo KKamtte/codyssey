@@ -1,0 +1,18 @@
+.card {
+  display: block;
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  color: inherit;
+}
+
+.link {
+  text-decoration: none;
+}
+
+.link:hover,
+.link:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
+}
