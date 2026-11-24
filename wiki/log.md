@@ -29,3 +29,6 @@
 ## [2026-11-23] mission | B1-2 - Vercel 배포 막힘과 해결
 - Import 목록에 개인 레포가 안 보임: Vercel GitHub 앱이 다른 조직에만 설치돼 있었음 → 개인 계정에 `codyssey` 레포 하나만 허용해 설치.
 - 첫 Import는 `main`만 읽는데 `main`에는 아직 B1-2 폴더가 없어 Root Directory를 고를 수 없음 → 프로젝트를 먼저 만들고 설정에서 Root Directory·Vite를 지정. mission 브랜치는 Preview 배포로 확인하고, 공개 Production URL은 a-11 `main` merge 후. [[b1-2]]
+
+## [2026-11-24] quiz | B1-2 - useEffect 첫 마운트 실행, 빈 상태 버튼 이유
+- push 전 문답 8문항 중 6개 통과, 2개 부분. useEffect가 처음 마운트될 때도 실행된다는 점을 빠뜨림. 필터 때문에 0장인 빈 상태에 "필터 초기화"가 필요한 이유를 놓침. [[b1-2-review-qa]]
