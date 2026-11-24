@@ -10,7 +10,8 @@ from .decorators import handle_errors, log_execution
 from .errors import EXIT_OK, AppError
 from .models import parse_amount, parse_category_name, parse_date, parse_tags, parse_type, today
 from .prompts import ask
-from .services import BudgetService
+from .formatting import transactions_table
+from .services import BudgetService, Page, SearchCriteria
 from .storage import Storage
 
 DEFAULT_DATA_DIR = "data"
@@ -41,6 +42,38 @@ def cmd_add(args: argparse.Namespace) -> int:
     tags = ask("태그(쉼표로 구분, 없으면 엔터)", parse_tags, default="")
     tx = service.add_transaction(type=tx_type, date=date, amount=amount, category=category, memo=memo, tags=tags)
     print(f"[저장 완료] id={tx.id}")
+    return EXIT_OK
+
+
+def print_page(page: Page, empty_message: str) -> None:
+    if not page.items:
+        print(empty_message)
+        return
+    print(transactions_table(page.items))
+    print(f"({page.total}건 중 최신 {len(page.items)}건)")
+
+
+@log_execution
+@handle_errors
+def cmd_list(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    print_page(service.list_latest(args.limit), "거래가 없습니다. add 로 첫 거래를 추가하세요.")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_search(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    criteria = SearchCriteria(
+        date_from=parse_date(args.date_from) if args.date_from else None,
+        date_to=parse_date(args.date_to) if args.date_to else None,
+        category=args.category,
+        type=args.type,
+        q=args.q,
+        tag=args.tag,
+    )
+    print_page(service.search(criteria, args.limit), "조건에 맞는 거래가 없습니다.")
     return EXIT_OK
 
 
@@ -110,10 +143,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     _add_command(sub, "add", "거래 추가 (날짜·타입·카테고리·금액·메모·태그를 차례로 입력)", cmd_add, common)
 
-    p = _add_command(sub, "list", "거래 목록 (최신순)", _not_ready("a-4"), common)
+    p = _add_command(sub, "list", "거래 목록 (최신순)", cmd_list, common)
     p.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"보여 줄 개수 (기본: {DEFAULT_LIMIT})")
 
-    p = _add_command(sub, "search", "조건으로 거래 검색 (최신순)", _not_ready("a-4"), common)
+    p = _add_command(sub, "search", "조건으로 거래 검색 (최신순)", cmd_search, common)
     p.add_argument("--from", dest="date_from", metavar="YYYY-MM-DD", help="이 날짜부터")
     p.add_argument("--to", dest="date_to", metavar="YYYY-MM-DD", help="이 날짜까지")
     p.add_argument("--category", help="카테고리")

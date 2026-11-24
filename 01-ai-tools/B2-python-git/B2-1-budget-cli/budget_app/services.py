@@ -6,11 +6,68 @@
 그래서 같은 규칙을 대화형 add 와 CSV import 가 함께 쓸 수 있다.
 """
 
-from dataclasses import replace
+import heapq
+from dataclasses import dataclass, replace
+from typing import Iterable, Iterator
 
 from .errors import NotFoundError, ValidationError
 from .models import Transaction, TxType, parse_category_name
 from .storage import Storage
+
+
+@dataclass(frozen=True)
+class SearchCriteria:
+    """search 조건. 비어 있는(None) 조건은 검사하지 않는다."""
+
+    date_from: str | None = None
+    date_to: str | None = None
+    category: str | None = None
+    type: TxType | None = None
+    q: str | None = None  # 메모에 들어 있는 글자 (대소문자 무시)
+    tag: str | None = None
+
+    def matches(self, tx: Transaction) -> bool:
+        if self.date_from and tx.date < self.date_from:  # YYYY-MM-DD 문자열 비교 = 날짜 비교
+            return False
+        if self.date_to and tx.date > self.date_to:
+            return False
+        if self.category and tx.category != self.category:
+            return False
+        if self.type and tx.type != self.type:
+            return False
+        if self.q and self.q.lower() not in tx.memo.lower():
+            return False
+        if self.tag and self.tag not in tx.tags:
+            return False
+        return True
+
+
+@dataclass(frozen=True)
+class Page:
+    """최신순 상위 N개와, 조건에 맞은 전체 건수."""
+
+    items: list[Transaction]
+    total: int
+
+
+def latest(transactions: Iterable[Transaction], limit: int) -> Page:
+    """스트리밍으로 들어오는 거래 중 최신 limit 개만 고른다 (결정 7).
+
+    heapq.nlargest 는 크기 limit 인 힙만 유지하며 한 건씩 비교한다.
+    그래서 거래가 N건이어도 메모리에는 limit 개만 남는다 (전체를 리스트로 만들어 정렬하지 않음).
+    """
+    if limit < 1:
+        raise ValidationError(f"--limit 는 1 이상이어야 합니다: {limit}", "예: --limit 10")
+    total = 0
+
+    def counted() -> Iterator[Transaction]:
+        nonlocal total
+        for tx in transactions:
+            total += 1
+            yield tx
+
+    items = heapq.nlargest(limit, counted(), key=lambda tx: tx.sort_key)
+    return Page(items=items, total=total)
 
 
 class BudgetService:
@@ -69,6 +126,15 @@ class BudgetService:
         return moved
 
     # ---- 거래 --------------------------------------------------------------
+
+    def list_latest(self, limit: int) -> Page:
+        return latest(self.storage.transactions.stream(), limit)
+
+    def search(self, criteria: SearchCriteria, limit: int) -> Page:
+        if criteria.date_from and criteria.date_to and criteria.date_from > criteria.date_to:
+            raise ValidationError(f"--from({criteria.date_from})이 --to({criteria.date_to})보다 늦습니다.", "기간의 앞뒤를 바꿔 주세요.")
+        matching = (tx for tx in self.storage.transactions.stream() if criteria.matches(tx))
+        return latest(matching, limit)
 
     def add_transaction(
         self,
