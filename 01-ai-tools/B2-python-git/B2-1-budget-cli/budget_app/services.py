@@ -11,7 +11,7 @@ from dataclasses import dataclass, replace
 from typing import Iterable, Iterator
 
 from .errors import NotFoundError, ValidationError
-from .models import Transaction, TxType, parse_category_name, parse_tx_id
+from .models import Budget, Transaction, TxType, parse_category_name, parse_tx_id
 from .storage import Storage
 
 
@@ -48,6 +48,53 @@ class Page:
 
     items: list[Transaction]
     total: int
+
+
+@dataclass(frozen=True)
+class MonthSummary:
+    month: str
+    count: int
+    income: int
+    expense: int
+    top_expenses: list[tuple[str, int]]  # (카테고리, 지출 합계) 큰 순서
+    budget: Budget | None
+
+    @property
+    def balance(self) -> int:
+        return self.income - self.expense
+
+    @property
+    def budget_rate(self) -> float | None:
+        """예산 대비 지출 비율(%). 예산이 없으면 None."""
+        return self.expense / self.budget.amount * 100 if self.budget else None
+
+    @property
+    def over_budget(self) -> int:
+        """예산을 넘은 금액. 넘지 않았거나 예산이 없으면 0."""
+        return max(self.expense - self.budget.amount, 0) if self.budget else 0
+
+
+def summarize(transactions: Iterable[Transaction], month: str, top: int, budget: Budget | None) -> MonthSummary:
+    """한 달 요약을 파일을 한 번 훑으며 계산한다.
+
+    거래를 모아 두지 않고 합계만 더한다. 메모리에 남는 건 카테고리별 합계(카테고리 수만큼)뿐이다.
+    """
+    if top < 1:
+        raise ValidationError(f"--top 은 1 이상이어야 합니다: {top}", "예: --top 3")
+    count = income = expense = 0
+    by_category: dict[str, int] = {}
+    for tx in transactions:
+        if tx.month != month:
+            continue
+        count += 1
+        if tx.type == "income":
+            income += tx.amount
+        else:
+            expense += tx.amount
+            by_category[tx.category] = by_category.get(tx.category, 0) + tx.amount
+    # 금액이 큰 순서, 같으면 이름 순서로 상위 top 개
+    top_expenses = sorted(by_category.items(), key=lambda item: (-item[1], item[0]))[:top]
+    return MonthSummary(month, count, income, expense, top_expenses, budget)
 
 
 def latest(transactions: Iterable[Transaction], limit: int) -> Page:
@@ -166,6 +213,21 @@ class BudgetService:
         old = self.get_transaction(raw_id)
         self.storage.transactions.update_where(lambda tx: None if tx.id == old.id else tx)
         return old
+
+    # ---- 예산·요약 ----------------------------------------------------------
+
+    def set_budget(self, month: str, amount: int) -> Budget | None:
+        """월 예산을 저장한다 (같은 달이 있으면 바꿈). 바꾸기 전 예산을 돌려준다."""
+        previous = self.storage.budgets.get(month)
+        self.storage.budgets.set(Budget(month, amount))
+        return previous
+
+    def budgets(self, month: str | None = None) -> list[Budget]:
+        found = [b for b in self.storage.budgets.stream() if month is None or b.month == month]
+        return sorted(found, key=lambda b: b.month)
+
+    def summary(self, month: str, top: int) -> MonthSummary:
+        return summarize(self.storage.transactions.stream(), month, top, self.storage.budgets.get(month))
 
     def list_latest(self, limit: int) -> Page:
         return latest(self.storage.transactions.stream(), limit)

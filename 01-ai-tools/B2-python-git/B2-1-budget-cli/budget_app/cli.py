@@ -8,7 +8,7 @@ from typing import Sequence
 
 from .decorators import handle_errors, log_execution
 from .errors import EXIT_OK, AppError
-from .models import parse_amount, parse_category_name, parse_date, parse_tags, parse_type, today
+from .models import parse_amount, parse_category_name, parse_date, parse_month, parse_tags, parse_type, today
 from .prompts import ask
 from .formatting import format_amount, transactions_table
 from .services import BudgetService, Page, SearchCriteria
@@ -118,6 +118,59 @@ def cmd_delete(args: argparse.Namespace) -> int:
 
 @log_execution
 @handle_errors
+def cmd_summary(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    month = parse_month(args.month)
+    s = service.summary(month, args.top)
+    print(f"[{month} 요약]")
+    if s.count == 0:
+        print("데이터 없음 (이 달에 기록된 거래가 없습니다)")
+        if s.budget:
+            print(f"예산: {format_amount(s.budget.amount)}원 (사용 0원)")
+        return EXIT_OK
+    print(f"총 수입: {format_amount(s.income)}원")
+    print(f"총 지출: {format_amount(s.expense)}원")
+    print(f"잔액: {format_amount(s.balance)}원")
+    if s.budget:
+        print(f"예산: {format_amount(s.budget.amount)}원 (사용률 {s.budget_rate:.1f}%)")
+        if s.over_budget:
+            print(f"[경고] 예산을 {format_amount(s.over_budget)}원 초과했습니다.")
+    else:
+        print(f"예산: 없음 (budget set --month {month} --amount <금액> 으로 설정)")
+    if s.top_expenses:
+        print(f"\n지출 TOP {args.top}")
+        for rank, (category, amount) in enumerate(s.top_expenses, start=1):
+            print(f"{rank}) {category} {format_amount(amount)}원")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_budget_set(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    month, amount = parse_month(args.month), parse_amount(args.amount)
+    previous = service.set_budget(month, amount)
+    changed = f" (이전 {format_amount(previous.amount)}원)" if previous else ""
+    print(f"[저장 완료] {month} 예산 {format_amount(amount)}원{changed}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_budget_show(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    month = parse_month(args.month) if args.month else None
+    budgets = service.budgets(month)
+    if not budgets:
+        print(f"{month} 예산이 없습니다." if month else "설정한 예산이 없습니다.")
+        return EXIT_OK
+    for budget in budgets:
+        print(f"{budget.month}  {format_amount(budget.amount)}원")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
 def cmd_category_add(args: argparse.Namespace) -> int:
     service = open_service(args)
     # 인자로 주면 틀렸을 때 오류로 끝내고, 대화형이면 형식·중복이 맞을 때까지 다시 묻는다
@@ -207,17 +260,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = _add_command(sub, "delete", "거래 삭제", cmd_delete, common)
     p.add_argument("--id", required=True, help="삭제할 거래 id")
 
-    p = _add_command(sub, "summary", "월별 요약 (수입·지출·잔액, 지출 TOP N, 예산 사용률)", _not_ready("a-6"), common)
+    p = _add_command(sub, "summary", "월별 요약 (수입·지출·잔액, 지출 TOP N, 예산 사용률)", cmd_summary, common)
     p.add_argument("--month", required=True, metavar="YYYY-MM")
     p.add_argument("--top", type=int, default=DEFAULT_TOP, help=f"카테고리별 지출 상위 N개 (기본: {DEFAULT_TOP})")
 
     budget = _add_command(sub, "budget", "월 예산 설정·조회", None, common)
     budget_sub = budget.add_subparsers(title="budget 명령", metavar="<set|show>", required=True)
-    p = _add_command(budget_sub, "set", "월 예산 저장", _not_ready("a-6"), common)
+    p = _add_command(budget_sub, "set", "월 예산 저장", cmd_budget_set, common)
     p.set_defaults(command_name="budget set")
     p.add_argument("--month", required=True, metavar="YYYY-MM")
     p.add_argument("--amount", required=True, metavar="금액", help="양의 정수")
-    p = _add_command(budget_sub, "show", "월 예산 조회", _not_ready("a-6"), common)
+    p = _add_command(budget_sub, "show", "월 예산 조회", cmd_budget_show, common)
     p.set_defaults(command_name="budget show")
     p.add_argument("--month", metavar="YYYY-MM", help="없으면 전체")
 
