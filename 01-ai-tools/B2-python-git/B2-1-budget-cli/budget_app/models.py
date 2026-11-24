@@ -146,6 +146,13 @@ def parse_tags(text: str) -> tuple[str, ...]:
     return tuple(seen)
 
 
+def parse_tx_id(text: str) -> str:
+    value = text.strip().upper()
+    if not TX_ID_PATTERN.fullmatch(value):
+        raise ValidationError(f"id 형식이 올바르지 않습니다: {text}", "예: TX-000003 (list 로 확인)")
+    return value
+
+
 def parse_category_name(text: str) -> str:
     name = text.strip()
     if not name:

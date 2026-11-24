@@ -91,7 +91,7 @@ class StorageTest(unittest.TestCase):
         self.assertEqual(deleted, 1)
         self.assertEqual([t.id for t in repo.stream()], ["TX-000001", "TX-000003"])
         self.assertEqual(repo.update_where(lambda t: t), 0)  # 바뀐 게 없으면 0
-        # 지운 번호는 다시 쓰지 않는다
+        # 가장 큰 번호를 지우면 그 번호가 다시 쓰인다 (결정 6: 남아 있는 최대 + 1)
         repo.update_where(lambda t: None if t.id == "TX-000003" else t)
         self.assertEqual(repo.next_id(), "TX-000002")
 

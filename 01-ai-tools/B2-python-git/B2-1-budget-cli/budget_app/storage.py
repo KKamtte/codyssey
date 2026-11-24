@@ -120,7 +120,7 @@ class TransactionRepository:
         self.file.append(tx.to_dict())
 
     def next_id(self) -> str:
-        """지금까지 쓴 가장 큰 번호 + 1 (결정 6). 지운 번호는 다시 쓰지 않는다."""
+        """남아 있는 거래 중 가장 큰 번호 + 1 (결정 6). 중간 번호를 지워도 그 번호는 다시 쓰지 않지만, 맨 마지막 번호를 지우면 다시 쓰인다."""
         largest = max((tx.number for tx in self.stream()), default=0)
         return f"{self.ID_PREFIX}{largest + 1:06d}"
 

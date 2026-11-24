@@ -11,7 +11,7 @@ from dataclasses import dataclass, replace
 from typing import Iterable, Iterator
 
 from .errors import NotFoundError, ValidationError
-from .models import Transaction, TxType, parse_category_name
+from .models import Transaction, TxType, parse_category_name, parse_tx_id
 from .storage import Storage
 
 
@@ -134,6 +134,38 @@ class BudgetService:
         return moved
 
     # ---- 거래 --------------------------------------------------------------
+
+    def get_transaction(self, raw_id: str) -> Transaction:
+        tx_id = parse_tx_id(raw_id)
+        tx = self.storage.transactions.find(tx_id)
+        if tx is None:
+            raise NotFoundError(f"없는 데이터입니다: {tx_id}", "list 나 search 로 id 를 확인하세요.")
+        return tx
+
+    def update_transaction(self, raw_id: str, changes: dict[str, object]) -> tuple[Transaction, Transaction]:
+        """옵션으로 받은 필드만 바꾼다 (결정 2). (바꾸기 전, 바꾼 뒤)를 돌려준다.
+
+        changes 는 이미 검증한 값만 담는다. 예: {"amount": 20000, "memo": "저녁"}
+        """
+        if not changes:
+            raise ValidationError(
+                "바꿀 항목이 없습니다.",
+                "예: update --id TX-000003 --amount 20000 (--date --type --category --amount --memo --tags)",
+            )
+        old = self.get_transaction(raw_id)
+        if "category" in changes:
+            self.require_category(str(changes["category"]))
+        new = replace(old, **changes)
+        if new == old:
+            raise ValidationError("지금 값과 같아서 바뀌는 것이 없습니다.", "다른 값을 주세요.")
+        # 해당 거래만 새 것으로 바꿔 전체를 원자적으로 다시 쓴다
+        self.storage.transactions.update_where(lambda tx: new if tx.id == old.id else tx)
+        return old, new
+
+    def delete_transaction(self, raw_id: str) -> Transaction:
+        old = self.get_transaction(raw_id)
+        self.storage.transactions.update_where(lambda tx: None if tx.id == old.id else tx)
+        return old
 
     def list_latest(self, limit: int) -> Page:
         return latest(self.storage.transactions.stream(), limit)

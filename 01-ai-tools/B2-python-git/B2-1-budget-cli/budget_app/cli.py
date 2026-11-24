@@ -10,7 +10,7 @@ from .decorators import handle_errors, log_execution
 from .errors import EXIT_OK, AppError
 from .models import parse_amount, parse_category_name, parse_date, parse_tags, parse_type, today
 from .prompts import ask
-from .formatting import transactions_table
+from .formatting import format_amount, transactions_table
 from .services import BudgetService, Page, SearchCriteria
 from .storage import Storage
 
@@ -75,6 +75,44 @@ def cmd_search(args: argparse.Namespace) -> int:
         tag=args.tag,
     )
     print_page(service.search(criteria, args.limit), "조건에 맞는 거래가 없습니다.")
+    return EXIT_OK
+
+
+UPDATE_FIELDS = {  # 옵션 이름 → 검증 함수. None 이 아닌(준) 옵션만 바꾼다
+    "date": parse_date,
+    "type": parse_type,
+    "category": parse_category_name,
+    "amount": parse_amount,
+    "memo": str.strip,  # 빈 문자열("")을 주면 메모를 지운다
+    "tags": parse_tags,  # 빈 문자열("")을 주면 태그를 지운다
+}
+
+
+def describe(value: object) -> str:
+    if isinstance(value, tuple):
+        return ",".join(value) or "(없음)"
+    if isinstance(value, int):
+        return format_amount(value)
+    return str(value) if value != "" else "(없음)"
+
+
+@log_execution
+@handle_errors
+def cmd_update(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    changes = {name: parse(getattr(args, name)) for name, parse in UPDATE_FIELDS.items() if getattr(args, name) is not None}
+    old, new = service.update_transaction(args.id, changes)
+    diffs = [f"{name} {describe(getattr(old, name))} → {describe(getattr(new, name))}" for name in UPDATE_FIELDS if getattr(old, name) != getattr(new, name)]
+    print(f"[수정 완료] {new.id}: {', '.join(diffs)}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_delete(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    tx = service.delete_transaction(args.id)
+    print(f"[삭제 완료] {tx.id} ({tx.date} {tx.type} {tx.category} {format_amount(tx.amount)}원)")
     return EXIT_OK
 
 
@@ -157,7 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--tag", help="태그")
     p.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"보여 줄 개수 (기본: {DEFAULT_LIMIT})")
 
-    p = _add_command(sub, "update", "거래 수정 (바꿀 항목만 옵션으로)", _not_ready("a-5"), common)
+    p = _add_command(sub, "update", "거래 수정 (바꿀 항목만 옵션으로)", cmd_update, common)
     p.add_argument("--id", required=True, help="수정할 거래 id (예: TX-000003)")
     p.add_argument("--date", metavar="YYYY-MM-DD")
     p.add_argument("--type", choices=["income", "expense"])
@@ -166,7 +204,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--memo")
     p.add_argument("--tags", metavar="태그,태그", help="쉼표로 구분 (빈 값이면 태그 지우기)")
 
-    p = _add_command(sub, "delete", "거래 삭제", _not_ready("a-5"), common)
+    p = _add_command(sub, "delete", "거래 삭제", cmd_delete, common)
     p.add_argument("--id", required=True, help="삭제할 거래 id")
 
     p = _add_command(sub, "summary", "월별 요약 (수입·지출·잔액, 지출 TOP N, 예산 사용률)", _not_ready("a-6"), common)
