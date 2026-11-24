@@ -8,10 +8,68 @@ from typing import Sequence
 
 from .decorators import handle_errors, log_execution
 from .errors import EXIT_OK, AppError
+from .models import parse_amount, parse_category_name, parse_date, parse_tags, parse_type, today
+from .prompts import ask
+from .services import BudgetService
+from .storage import Storage
 
 DEFAULT_DATA_DIR = "data"
 DEFAULT_LIMIT = 20
 DEFAULT_TOP = 3
+
+
+def open_service(args: argparse.Namespace) -> BudgetService:
+    """데이터 폴더를 준비하고(처음이면 파일·기본 카테고리 생성) 서비스를 만든다."""
+    storage = Storage(args.data_dir)
+    for notice in storage.initialize():
+        print(notice)
+    return BudgetService(storage)
+
+
+# ---- 명령 ---------------------------------------------------------------
+
+@log_execution
+@handle_errors
+def cmd_add(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    categories = service.category_names()
+    date = ask(f"날짜(YYYY-MM-DD, 엔터=오늘 {today()})", parse_date, default=today())
+    tx_type = ask("타입(income/expense)", parse_type)
+    category = ask(f"카테고리({', '.join(categories)})", lambda text: service.require_category(parse_category_name(text)))
+    amount = ask("금액(양수)", parse_amount)
+    memo = ask("메모(선택)", str.strip, default="")
+    tags = ask("태그(쉼표로 구분, 없으면 엔터)", parse_tags, default="")
+    tx = service.add_transaction(type=tx_type, date=date, amount=amount, category=category, memo=memo, tags=tags)
+    print(f"[저장 완료] id={tx.id}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_category_add(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    name = service.add_category(args.name if args.name is not None else ask("카테고리명", parse_category_name))
+    print(f"[저장 완료] category={name}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_category_list(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    for name in service.category_names():
+        print(f"- {name}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_category_remove(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    moved = service.remove_category(args.name, args.replace_with)
+    suffix = f" (거래 {moved}건을 {args.replace_with}(으)로 옮김)" if moved else ""
+    print(f"[삭제 완료] category={args.name}{suffix}")
+    return EXIT_OK
 
 
 def _not_ready(step: str):
@@ -50,7 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--data-dir", default=DEFAULT_DATA_DIR, help=f"데이터 폴더 (기본: ./{DEFAULT_DATA_DIR})")
     sub = parser.add_subparsers(title="명령", metavar="<command>", required=True)
 
-    _add_command(sub, "add", "거래 추가 (날짜·타입·카테고리·금액·메모·태그를 차례로 입력)", _not_ready("a-3"), common)
+    _add_command(sub, "add", "거래 추가 (날짜·타입·카테고리·금액·메모·태그를 차례로 입력)", cmd_add, common)
 
     p = _add_command(sub, "list", "거래 목록 (최신순)", _not_ready("a-4"), common)
     p.add_argument("--limit", type=int, default=DEFAULT_LIMIT, help=f"보여 줄 개수 (기본: {DEFAULT_LIMIT})")
@@ -92,12 +150,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     category = _add_command(sub, "category", "카테고리 관리", None, common)
     category_sub = category.add_subparsers(title="category 명령", metavar="<add|list|remove>", required=True)
-    p = _add_command(category_sub, "add", "카테고리 추가 (이름을 입력)", _not_ready("a-3"), common)
+    p = _add_command(category_sub, "add", "카테고리 추가 (이름을 입력)", cmd_category_add, common)
     p.set_defaults(command_name="category add")
     p.add_argument("name", nargs="?", help="카테고리 이름 (없으면 물어봄)")
-    p = _add_command(category_sub, "list", "카테고리 목록", _not_ready("a-3"), common)
+    p = _add_command(category_sub, "list", "카테고리 목록", cmd_category_list, common)
     p.set_defaults(command_name="category list")
-    p = _add_command(category_sub, "remove", "카테고리 삭제 (사용 중이면 막음)", _not_ready("a-3"), common)
+    p = _add_command(category_sub, "remove", "카테고리 삭제 (사용 중이면 막음)", cmd_category_remove, common)
     p.set_defaults(command_name="category remove")
     p.add_argument("name", help="삭제할 카테고리")
     p.add_argument("--replace-with", metavar="카테고리", help="사용 중인 거래를 이 카테고리로 옮긴 뒤 삭제")
