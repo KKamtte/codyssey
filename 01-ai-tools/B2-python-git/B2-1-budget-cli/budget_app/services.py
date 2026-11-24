@@ -11,7 +11,8 @@ from dataclasses import dataclass, replace
 from typing import Iterable, Iterator
 
 from .errors import NotFoundError, ValidationError
-from .models import Budget, Transaction, TxType, parse_category_name, parse_tx_id
+from .csv_io import read_rows, write_transactions
+from .models import Budget, Transaction, TxType, parse_amount, parse_category_name, parse_date, parse_tags, parse_tx_id, parse_type
 from .storage import Storage
 
 
@@ -48,6 +49,12 @@ class Page:
 
     items: list[Transaction]
     total: int
+
+
+@dataclass(frozen=True)
+class ImportResult:
+    imported: int
+    skipped: list[tuple[int, str]]  # (CSV 행 번호, 건너뛴 이유)
 
 
 @dataclass(frozen=True)
@@ -213,6 +220,60 @@ class BudgetService:
         old = self.get_transaction(raw_id)
         self.storage.transactions.update_where(lambda tx: None if tx.id == old.id else tx)
         return old
+
+    # ---- CSV 가져오기·내보내기 ------------------------------------------------
+
+    def import_csv(self, path: str) -> ImportResult:
+        """CSV 를 한 행씩 읽어 검증하고, 통과한 행만 거래로 추가한다.
+
+        틀린 행은 건너뛰고 (행 번호, 사유)를 모은다. id 는 처음에 한 번만 구해 1씩 올린다
+        (행마다 next_id() 를 부르면 그때마다 파일 전체를 다시 읽게 된다).
+        """
+        categories = set(self.category_names())
+        number = int(self.storage.transactions.next_id()[3:])
+        skipped: list[tuple[int, str]] = []
+        imported = 0
+
+        def valid_records() -> Iterator[dict]:
+            nonlocal number, imported
+            for line_no, row in read_rows(path):
+                try:
+                    category = parse_category_name(row.get("category", ""))
+                    if category not in categories:
+                        raise ValidationError(f"등록되지 않은 카테고리입니다: {category}")
+                    tx = Transaction(
+                        id=f"TX-{number:06d}",
+                        type=parse_type(row.get("type", "")),
+                        date=parse_date(row.get("date", "")),
+                        amount=parse_amount(row.get("amount", "")),
+                        category=category,
+                        memo=row.get("memo", "").strip(),
+                        tags=parse_tags(row.get("tags", "")),
+                    )
+                except ValidationError as error:
+                    skipped.append((line_no, error.message))
+                    continue
+                number += 1
+                imported += 1
+                yield tx.to_dict()
+
+        self.storage.transactions.file.append_many(valid_records())
+        return ImportResult(imported, skipped)
+
+    def export_csv(self, path: str, month: str | None, date_from: str | None, date_to: str | None) -> int:
+        """조건에 맞는 거래를 날짜 순서로 CSV 에 쓴다. 쓴 건수를 돌려준다."""
+        if month is None and date_from is None and date_to is None:
+            raise ValidationError("내보낼 기간이 없습니다.", "--month YYYY-MM 또는 --from YYYY-MM-DD --to YYYY-MM-DD 를 주세요.")
+        if month and (date_from or date_to):
+            raise ValidationError("--month 와 --from/--to 는 함께 쓸 수 없습니다.", "둘 중 하나만 주세요.")
+        if date_from and date_to and date_from > date_to:
+            raise ValidationError(f"--from({date_from})이 --to({date_to})보다 늦습니다.", "기간의 앞뒤를 바꿔 주세요.")
+        if month:
+            date_from, date_to = f"{month}-01", f"{month}-31"  # YYYY-MM-DD 문자열 비교라 31일로 둬도 그 달만 걸린다
+        criteria = SearchCriteria(date_from=date_from, date_to=date_to)
+        # 조건에 맞는 것만 모아 날짜순으로 정렬한다 (내보내는 기간만큼만 메모리에 둔다)
+        matching = sorted((tx for tx in self.storage.transactions.stream() if criteria.matches(tx)), key=lambda tx: tx.sort_key)
+        return write_transactions(path, matching)
 
     # ---- 예산·요약 ----------------------------------------------------------
 

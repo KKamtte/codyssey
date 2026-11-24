@@ -69,9 +69,14 @@ class JsonlFile:
             raise self._broken(None, " 이 UTF-8 텍스트가 아닙니다.") from None
 
     def append(self, record: Record) -> None:
-        """파일 끝에 한 줄 덧붙인다. 마지막 줄에 줄바꿈이 빠져 있으면 먼저 채운다.
+        """파일 끝에 한 줄 덧붙인다."""
+        self.append_many([record])
+
+    def append_many(self, records: Iterable[Record]) -> None:
+        """파일 끝에 여러 줄을 덧붙인다. 마지막 줄에 줄바꿈이 빠져 있으면 먼저 채운다.
 
         (편집기로 고치거나 이전 쓰기가 끊기면 줄바꿈 없이 끝날 수 있다. 그대로 붙이면 두 거래가 한 줄로 합쳐져 깨진다)
+        records 가 제너레이터여도 한 건씩 받아 바로 쓴다.
         """
         with open(self.path, "a+b") as file:
             file.seek(0, os.SEEK_END)
@@ -79,7 +84,8 @@ class JsonlFile:
                 file.seek(-1, os.SEEK_END)
                 if file.read(1) != b"\n":
                     file.write(b"\n")
-            file.write((json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8"))
+            for record in records:
+                file.write((json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8"))
 
     def rewrite(self, records: Iterable[Record], keep: Callable[[], bool] = lambda: True) -> bool:
         """records 를 임시 파일에 모두 쓴 뒤 원본과 바꿔 끼운다 (원자적 교체).

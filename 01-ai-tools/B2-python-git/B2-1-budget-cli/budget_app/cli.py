@@ -4,6 +4,7 @@
 """
 
 import argparse
+from pathlib import Path
 from typing import Sequence
 
 from .decorators import handle_errors, log_execution
@@ -169,6 +170,38 @@ def cmd_budget_show(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+MAX_SKIP_LINES = 20  # 건너뛴 행이 많으면 앞의 몇 개만 보여 준다
+
+
+@log_execution
+@handle_errors
+def cmd_import(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    result = service.import_csv(args.source)
+    for line_no, reason in result.skipped[:MAX_SKIP_LINES]:
+        print(f"[건너뜀] {line_no}행: {reason}")
+    if len(result.skipped) > MAX_SKIP_LINES:
+        print(f"[건너뜀] … 외 {len(result.skipped) - MAX_SKIP_LINES}행")
+    print(f"[완료] imported={result.imported}, skipped={len(result.skipped)}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_export(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    if Path(args.out).exists() and not args.force:
+        raise AppError(f"이미 있는 파일입니다: {args.out}", "다른 이름을 주거나, 덮어쓰려면 --force 를 붙이세요.")
+    count = service.export_csv(
+        args.out,
+        month=parse_month(args.month) if args.month else None,
+        date_from=parse_date(args.date_from) if args.date_from else None,
+        date_to=parse_date(args.date_to) if args.date_to else None,
+    )
+    print(f"[완료] {args.out} ({count} records)")
+    return EXIT_OK
+
+
 @log_execution
 @handle_errors
 def cmd_category_add(args: argparse.Namespace) -> int:
@@ -286,14 +319,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("name", help="삭제할 카테고리")
     p.add_argument("--replace-with", metavar="카테고리", help="사용 중인 거래를 이 카테고리로 옮긴 뒤 삭제")
 
-    p = _add_command(sub, "import", "CSV 파일에서 거래 가져오기", _not_ready("a-7"), common)
+    p = _add_command(sub, "import", "CSV 파일에서 거래 가져오기", cmd_import, common)
     p.add_argument("--from", dest="source", required=True, metavar="CSV", help="가져올 CSV 파일")
 
-    p = _add_command(sub, "export", "조건에 맞는 거래를 CSV로 내보내기 (--month 또는 --from/--to 필수)", _not_ready("a-7"), common)
+    p = _add_command(sub, "export", "조건에 맞는 거래를 CSV로 내보내기 (--month 또는 --from/--to 필수)", cmd_export, common)
     p.add_argument("--out", required=True, metavar="CSV", help="만들 CSV 파일")
     p.add_argument("--month", metavar="YYYY-MM")
     p.add_argument("--from", dest="date_from", metavar="YYYY-MM-DD")
     p.add_argument("--to", dest="date_to", metavar="YYYY-MM-DD")
+    p.add_argument("--force", action="store_true", help="이미 있는 파일을 덮어쓰기")
 
     _add_command(sub, "backup", "데이터 파일 백업 (data/backups/시각/)", _not_ready("a-8"), common)
 
