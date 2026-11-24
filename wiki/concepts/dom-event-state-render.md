@@ -1,6 +1,6 @@
 ---
 title: DOM 선택, 이벤트, 상태 → 렌더링 흐름
-updated: 2026-10-22
+updated: 2026-11-24
 sources: []
 ---
 
@@ -33,3 +33,6 @@ sources: []
 ## innerHTML과 XSS
 - 외부 데이터(GitHub 저장소 설명 등)를 `innerHTML`에 그대로 넣으면 `<img src=x onerror="...">` 같은 이벤트 속성이 실행된다. `<script>` 태그만 막는다고 안전하지 않다.
 - `escapeHtml`로 `& < > " '`를 바꿔 넣는다. 따옴표도 바꾸므로 속성 값 밖으로 빠져나가는 것도 막는다.
+
+## React에서는
+- [[b1-2]]에서 같은 "상태 → 렌더링"을 React로 했다. DOM을 직접 고치지 않고 state만 바꾸면 React가 다시 렌더링한다. 이벤트 위임·`escapeHtml`도 필요 없어진다(JSX가 값을 이스케이프하고, React가 루트 한 곳에서 이벤트를 받아 처리한다. 위임을 React가 대신 해 주는 셈). → [[react-component-props-state]]

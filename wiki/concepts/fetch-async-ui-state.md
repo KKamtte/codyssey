@@ -1,10 +1,10 @@
 ---
 title: fetch + async/await와 로딩·성공·에러·빈 상태
-updated: 2026-10-22
+updated: 2026-11-24
 sources: []
 ---
 
-[[b1-1]]에서 배운 것. 과제 목표 "비동기로 데이터를 가져오고, 상태를 UI로 어떻게 표현했는지". 흐름은 [[dom-event-state-render]].
+[[b1-1]]에서 배운 것. 과제 목표 "비동기로 데이터를 가져오고, 상태를 UI로 어떻게 표현했는지". 흐름은 [[dom-event-state-render]]. React에서 같은 일을 한 버전은 [[react-useeffect-data-fetching]] ([[b1-2]]).
 
 ## async/await
 - `fetch`는 Promise를 돌려준다. `await`로 결과를 기다리면 위에서 아래로 읽히는 코드가 된다. `try/catch`로 실패를 잡는다.

@@ -32,3 +32,6 @@
 
 ## [2026-11-24] quiz | B1-2 - useEffect 첫 마운트 실행, 빈 상태 버튼 이유
 - push 전 문답 8문항 중 6개 통과, 2개 부분. useEffect가 처음 마운트될 때도 실행된다는 점을 빠뜨림. 필터 때문에 0장인 빈 상태에 "필터 초기화"가 필요한 이유를 놓침. [[b1-2-review-qa]]
+
+## [2026-11-24] mission | B1-2 완료
+- 문답 8문항([[b1-2-review-qa]]) 후 `main` merge, Vercel Production 배포 https://b1-2-qa-cards.vercel.app (로그인 없이 열림 확인). 회고 작성, 개념 [[react-component-props-state]] · [[react-useeffect-data-fetching]] · [[spa-routing-deploy]] 정리. [[b1-2]]

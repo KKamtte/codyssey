@@ -3,11 +3,11 @@
 위키 전체 목차. 규칙은 [[AGENTS]] 참고.
 
 ## Plans - 열린 항목
-- [[b1-2]] — B1-2 React SPA 문답 카드(라우팅, CRUD, Supabase Auth, Vercel 배포): 작업 단계와 결정 사항
 - [[review-quiz]] — push 전 문답 방식 계획, 집에서 개인 계정으로 확인할 체크리스트
 
 ## Plans - 완료
 - [[b1-1]] — B1-1 나를 소개하는 웹페이지: 작업 단계(a-0~a-10)와 결정 사항 (2026-10-22 완료)
+- [[b1-2]] — B1-2 React SPA 문답 카드(라우팅, CRUD, Supabase Auth, Vercel 배포): 작업 단계(a-0~a-11)와 결정 사항 (2026-11-24 완료)
 
 ## Entities
 - [[codyssey]] — 코디세이 과정 단계/기간, 과제 레포 구조, 학칙 요점
@@ -20,6 +20,9 @@
 - [[dom-event-state-render]] — querySelector·addEventListener, 상태 → 렌더링, 이벤트 위임, XSS
 - [[es6-syntax]] — 화살표 함수, 구조분해, map/filter/sort/Set, map vs every
 - [[fetch-async-ui-state]] — fetch와 async/await, HTTP 에러 처리, 로딩·성공·빈·에러 상태
+- [[react-component-props-state]] — 컴포넌트 분리 기준, props vs state, 상태 끌어올리기, 상태 → 렌더링 흐름
+- [[react-useeffect-data-fetching]] — useEffect 실행 시점·의존성·정리 함수, loading/notFound/error, 빈 상태 나누기
+- [[spa-routing-deploy]] — 클릭 이동 vs 새로고침, 보호 라우트, Vercel rewrite·빌드 때 환경변수, RLS
 
 ## Sources
 - [[karpathy-llm-wiki]] — Karpathy의 LLM Wiki 아이디어 원문 요약
