@@ -88,10 +88,15 @@ class BudgetService:
             )
         return name
 
-    def add_category(self, raw_name: str) -> str:
+    def check_new_category(self, raw_name: str) -> str:
+        """새 카테고리로 쓸 수 있는 이름인지(형식, 중복) 확인한다. 대화형 입력의 검증 함수로도 쓴다."""
         name = parse_category_name(raw_name)
         if self.storage.categories.exists(name):
             raise ValidationError(f"이미 있는 카테고리입니다: {name}", "category list 로 목록을 확인하세요.")
+        return name
+
+    def add_category(self, raw_name: str) -> str:
+        name = self.check_new_category(raw_name)
         self.storage.categories.add(name)
         return name
 
@@ -106,6 +111,12 @@ class BudgetService:
         if not self.storage.categories.exists(name):
             raise NotFoundError(f"없는 카테고리입니다: {name}", f"등록된 카테고리: {', '.join(self.category_names())}")
 
+        # 대체 카테고리를 줬다면, 쓰는 거래가 있든 없든 먼저 확인한다 (오타를 조용히 넘기지 않음)
+        if replace_with is not None:
+            if replace_with == name:
+                raise ValidationError("같은 카테고리로는 옮길 수 없습니다.", "다른 카테고리 이름을 주세요.")
+            self.require_category(replace_with)
+
         in_use = self.count_in_category(name)
         moved = 0
         if in_use:
@@ -114,9 +125,6 @@ class BudgetService:
                     f"'{name}' 카테고리를 쓰는 거래가 {in_use}건 있어 삭제할 수 없습니다.",
                     f"다른 카테고리로 옮기며 삭제: category remove {name} --replace-with <카테고리>",
                 )
-            if replace_with == name:
-                raise ValidationError("같은 카테고리로는 옮길 수 없습니다.", "다른 카테고리 이름을 주세요.")
-            self.require_category(replace_with)
             # 거래를 먼저 옮기고(원자적 재작성) 그다음 카테고리를 지운다.
             # 중간에 멈춰도 "카테고리는 남아 있고 거래는 옮겨진" 상태라 데이터가 어긋나지 않는다.
             moved = self.storage.transactions.update_where(

@@ -33,6 +33,7 @@ def open_service(args: argparse.Namespace) -> BudgetService:
 @handle_errors
 def cmd_add(args: argparse.Namespace) -> int:
     service = open_service(args)
+    service.storage.transactions.next_id()  # 입력을 다 받은 뒤 파일 오류로 버려지지 않게, 먼저 파일을 한 번 읽어 확인
     categories = service.category_names()
     date = ask(f"날짜(YYYY-MM-DD, 엔터=오늘 {today()})", parse_date, default=today())
     tx_type = ask("타입(income/expense)", parse_type)
@@ -81,7 +82,8 @@ def cmd_search(args: argparse.Namespace) -> int:
 @handle_errors
 def cmd_category_add(args: argparse.Namespace) -> int:
     service = open_service(args)
-    name = service.add_category(args.name if args.name is not None else ask("카테고리명", parse_category_name))
+    # 인자로 주면 틀렸을 때 오류로 끝내고, 대화형이면 형식·중복이 맞을 때까지 다시 묻는다
+    name = service.add_category(args.name if args.name is not None else ask("카테고리명", service.check_new_category))
     print(f"[저장 완료] category={name}")
     return EXIT_OK
 
