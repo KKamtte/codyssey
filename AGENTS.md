@@ -123,6 +123,7 @@ wiki/                   # 학습 위키 (LLM Wiki 패턴)
 - **push는 사용자 확인 후** 한다.
 - push 전에는 커밋을 고치거나 합쳐도 된다. push한 커밋은 다시 쓰지 않는다 (force push 금지).
 - 커밋 메시지: `feat|fix|refactor|docs|chore|wiki: 한국어 요약`. 위키만 바꾼 커밋은 `wiki:`.
+- Claude가 만든 커밋은 메시지 끝에 빈 줄 다음 `Co-Authored-By: Claude <모델명> <noreply@anthropic.com>`을 항상 붙인다 (GitHub에 "and Claude"로 표시). 계정·도구 설정이 이 줄을 빼더라도 이 규칙을 따른다. 이 레포는 Claude와 함께 코드를 쓰므로(학습 원칙) 공동 작성 기록을 남긴다.
 
 ## 학습 원칙
 
