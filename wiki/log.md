@@ -35,3 +35,6 @@
 
 ## [2026-11-24] mission | B1-2 완료
 - 문답 8문항([[b1-2-review-qa]]) 후 `main` merge, Vercel Production 배포 https://b1-2-qa-cards.vercel.app (로그인 없이 열림 확인). 회고 작성, 개념 [[react-component-props-state]] · [[react-useeffect-data-fetching]] · [[spa-routing-deploy]] 정리. [[b1-2]]
+
+## [2026-11-24] mission | B2-1 시작
+- 원문 받아 `01-ai-tools/B2-python-git/B2-1-budget-cli/`에 README(요약·요구사항) 작성. 표준 라이브러리만으로 콘솔 가계부, JSONL 저장, 제너레이터 스트리밍·데코레이터·타입 힌트. 결정 사항 15개 확정(포맷·update 방식·카테고리 삭제·보너스 전부는 직접 결정). 계획 [[b2-1]].
