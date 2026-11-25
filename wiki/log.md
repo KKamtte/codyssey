@@ -38,3 +38,9 @@
 
 ## [2026-11-24] mission | B2-1 시작
 - 원문 받아 `01-ai-tools/B2-python-git/B2-1-budget-cli/`에 README(요약·요구사항) 작성. 표준 라이브러리만으로 콘솔 가계부, JSONL 저장, 제너레이터 스트리밍·데코레이터·타입 힌트. 결정 사항 15개 확정(포맷·update 방식·카테고리 삭제·보너스 전부는 직접 결정). 계획 [[b2-1]].
+
+## [2026-11-24] mission | B2-1 - 코드 리뷰로 찾은 저장 버그
+- a-4 진행 중 옆 칸(herdr)의 다른 Claude 세션에 a-1~a-3 읽기 전용 리뷰를 맡김. 줄바꿈 없는 마지막 줄에 append 하면 두 거래가 한 줄로 붙는 문제, 필드 빠진 줄이 "예상 못 한 오류"로 나가는 문제, 원자적 교체 뒤 권한 0600 등을 찾아 고치고 회귀 테스트 15개 추가. [[atomic-file-write]]
+
+## [2026-11-25] mission | B2-1 완료
+- 문답 8문항 모두 통과([[b2-1-review-qa]]) 후 `main` merge. 명령 12개(보너스 backup·반복 내역 포함), 테스트 90개. 회고 작성, 개념 [[python-layered-cli]] · [[python-generator-streaming]] · [[atomic-file-write]] · [[python-decorator-cross-cutting]] 정리. [[b2-1]]

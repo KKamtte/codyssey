@@ -3,12 +3,12 @@
 위키 전체 목차. 규칙은 [[AGENTS]] 참고.
 
 ## Plans - 열린 항목
-- [[b2-1]] — B2-1 용돈 기입장(Python 콘솔 가계부, JSONL, 제너레이터·데코레이터): 작업 단계와 결정 사항
 - [[review-quiz]] — push 전 문답 방식 계획, 집에서 개인 계정으로 확인할 체크리스트
 
 ## Plans - 완료
 - [[b1-1]] — B1-1 나를 소개하는 웹페이지: 작업 단계(a-0~a-10)와 결정 사항 (2026-10-22 완료)
 - [[b1-2]] — B1-2 React SPA 문답 카드(라우팅, CRUD, Supabase Auth, Vercel 배포): 작업 단계(a-0~a-11)와 결정 사항 (2026-11-24 완료)
+- [[b2-1]] — B2-1 용돈 기입장(Python 콘솔 가계부, JSONL, 제너레이터·데코레이터): 작업 단계(a-0~a-10)와 결정 사항 19개 (2026-11-25 완료)
 
 ## Entities
 - [[codyssey]] — 코디세이 과정 단계/기간, 과제 레포 구조, 학칙 요점
@@ -24,6 +24,10 @@
 - [[react-component-props-state]] — 컴포넌트 분리 기준, props vs state, 상태 끌어올리기, 상태 → 렌더링 흐름
 - [[react-useeffect-data-fetching]] — useEffect 실행 시점·의존성·정리 함수, loading/notFound/error, 빈 상태 나누기
 - [[spa-routing-deploy]] — 클릭 이동 vs 새로고침, 보호 라우트, Vercel rewrite·빌드 때 환경변수, RLS
+- [[python-layered-cli]] — 콘솔 프로그램의 계층(CLI/서비스/저장소/모델), frozen dataclass·replace, 타입 힌트
+- [[python-generator-streaming]] — yield 스트리밍, heapq.nlargest 로 최신 N개, 모으지 않는 합계
+- [[atomic-file-write]] — JSONL append vs 전체 다시 쓰기, 임시 파일 + os.replace 원자적 교체, 깨진 파일 처리
+- [[python-decorator-cross-cutting]] — 데코레이터로 예외·로그 분리, 데코레이터 순서, 종료 코드
 
 ## Sources
 - [[karpathy-llm-wiki]] — Karpathy의 LLM Wiki 아이디어 원문 요약
