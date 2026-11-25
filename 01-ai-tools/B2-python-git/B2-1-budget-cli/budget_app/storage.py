@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Iterator, TypeVar
 
 from .errors import StorageError
-from .models import Budget, Transaction
+from .models import Budget, RecurringRule, Transaction
 
 Record = dict[str, Any]
 T = TypeVar("T")
@@ -190,6 +190,39 @@ class BudgetStore:
         self.file.rewrite([*({"month": b.month, "amount": b.amount} for b in others), {"month": budget.month, "amount": budget.amount}])
 
 
+class RecurringStore:
+    ID_PREFIX = "RC-"
+
+    def __init__(self, file: JsonlFile) -> None:
+        self.file = file
+
+    def stream(self) -> Iterator[RecurringRule]:
+        return self.file.stream(RecurringRule.from_dict)
+
+    def next_id(self) -> str:
+        largest = max((rule.number for rule in self.stream()), default=0)
+        return f"{self.ID_PREFIX}{largest + 1:06d}"
+
+    def add(self, rule: RecurringRule) -> None:
+        self.file.append(rule.to_dict())
+
+    def update_where(self, change: Callable[[RecurringRule], RecurringRule | None]) -> int:
+        """TransactionRepository.update_where 와 같다: 바꾸거나(None 이면 지우고) 바뀐 건수를 돌려준다."""
+        changed = 0
+
+        def updated() -> Iterator[Record]:
+            nonlocal changed
+            for rule in self.stream():
+                new = change(rule)
+                if new != rule:
+                    changed += 1
+                if new is not None:
+                    yield new.to_dict()
+
+        self.file.rewrite(updated(), keep=lambda: changed > 0)
+        return changed
+
+
 class Storage:
     """데이터 폴더 하나에 있는 파일들을 묶는다."""
 
@@ -198,7 +231,7 @@ class Storage:
         self.transactions = TransactionRepository(JsonlFile(self.data_dir / TRANSACTIONS_FILE))
         self.categories = CategoryStore(JsonlFile(self.data_dir / CATEGORIES_FILE))
         self.budgets = BudgetStore(JsonlFile(self.data_dir / BUDGETS_FILE))
-        self.recurring_file = JsonlFile(self.data_dir / RECURRING_FILE)
+        self.recurring = RecurringStore(JsonlFile(self.data_dir / RECURRING_FILE))
 
     def initialize(self) -> list[str]:
         """폴더·파일이 없으면 만들고, 사용자에게 보여 줄 안내 문구를 돌려준다."""

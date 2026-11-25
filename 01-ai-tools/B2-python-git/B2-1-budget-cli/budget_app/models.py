@@ -5,6 +5,7 @@
 대화형 입력(add)·옵션(update)·CSV(import) 어디서 들어온 값이든 같은 함수로 검사한다.
 """
 
+import calendar
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import date, datetime
@@ -90,6 +91,54 @@ class Budget:
     amount: int
 
 
+RULE_ID_PATTERN = re.compile(r"RC-(\d{6,})")
+
+
+@dataclass(frozen=True)
+class RecurringRule:
+    """반복 내역 규칙 (결정 12). 매월 day 일에 같은 거래를 만든다."""
+
+    id: str
+    day: int  # 1~31. 그 달에 없는 날(예: 2월 31일)이면 그 달 마지막 날로
+    type: TxType
+    category: str
+    amount: int
+    memo: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "RecurringRule":
+        rule = cls(
+            id=str(data["id"]),
+            day=data["day"],
+            type=data["type"],
+            category=str(data["category"]),
+            amount=data["amount"],
+            memo=str(data.get("memo", "")),
+        )
+        if not RULE_ID_PATTERN.fullmatch(rule.id):
+            raise ValueError(f"규칙 id 형식이 RC-000001 이 아닙니다: {rule.id}")
+        if not isinstance(rule.day, int) or not 1 <= rule.day <= 31:
+            raise ValueError(f"day 가 1~31 이 아닙니다: {rule.day!r}")
+        if rule.type not in TX_TYPES:
+            raise ValueError(f"type 이 income/expense 가 아닙니다: {rule.type}")
+        if not isinstance(rule.amount, int) or isinstance(rule.amount, bool) or rule.amount <= 0:
+            raise ValueError(f"amount 가 양의 정수가 아닙니다: {rule.amount!r}")
+        return rule
+
+    @property
+    def number(self) -> int:
+        return int(self.id[3:])
+
+    def date_in(self, month: str) -> str:
+        """이 규칙이 month(YYYY-MM)에 만들 거래 날짜. 31일 규칙은 2월이면 28·29일."""
+        year, mon = (int(part) for part in month.split("-"))
+        last_day = calendar.monthrange(year, mon)[1]
+        return f"{month}-{min(self.day, last_day):02d}"
+
+
 # ---- 검증 ---------------------------------------------------------------
 
 def parse_date(text: str) -> str:
@@ -150,6 +199,20 @@ def parse_tx_id(text: str) -> str:
     value = text.strip().upper()
     if not TX_ID_PATTERN.fullmatch(value):
         raise ValidationError(f"id 형식이 올바르지 않습니다: {text}", "예: TX-000003 (list 로 확인)")
+    return value
+
+
+def parse_day(text: str) -> int:
+    raw = text.strip()
+    if not raw.isascii() or not raw.isdigit() or not 1 <= int(raw) <= 31:
+        raise ValidationError(f"날짜(일)는 1~31 사이 숫자여야 합니다: {text}", "예: 25 (31 이면 짧은 달은 마지막 날)")
+    return int(raw)
+
+
+def parse_rule_id(text: str) -> str:
+    value = text.strip().upper()
+    if not RULE_ID_PATTERN.fullmatch(value):
+        raise ValidationError(f"규칙 id 형식이 올바르지 않습니다: {text}", "예: RC-000001 (recurring list 로 확인)")
     return value
 
 

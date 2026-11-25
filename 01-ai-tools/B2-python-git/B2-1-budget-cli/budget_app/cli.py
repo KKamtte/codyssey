@@ -9,9 +9,9 @@ from typing import Sequence
 
 from .decorators import handle_errors, log_execution
 from .errors import EXIT_OK, AppError
-from .models import parse_amount, parse_category_name, parse_date, parse_month, parse_tags, parse_type, today
+from .models import parse_amount, parse_category_name, parse_date, parse_day, parse_month, parse_tags, parse_type, today
 from .prompts import ask
-from .formatting import format_amount, transactions_table
+from .formatting import format_amount, table, transactions_table
 from .services import BudgetService, Page, SearchCriteria
 from .storage import Storage
 
@@ -204,6 +204,74 @@ def cmd_export(args: argparse.Namespace) -> int:
 
 @log_execution
 @handle_errors
+def cmd_backup(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    target = service.backup()
+    files = sorted(path.name for path in target.iterdir())
+    print(f"[백업 완료] {target}/ ({', '.join(files)})")
+    print("[안내] 되돌리려면 이 폴더의 파일을 데이터 폴더에 복사하세요.")
+    return EXIT_OK
+
+
+def describe_rule(rule) -> str:
+    memo = f" {rule.memo}" if rule.memo else ""
+    return f"{rule.id} 매월 {rule.day}일 {rule.type} {rule.category} {format_amount(rule.amount)}원{memo}"
+
+
+@log_execution
+@handle_errors
+def cmd_recurring_add(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    categories = service.category_names()
+    day = ask("매월 며칠(1~31, 31이면 짧은 달은 마지막 날)", parse_day)
+    tx_type = ask("타입(income/expense)", parse_type)
+    category = ask(f"카테고리({', '.join(categories)})", lambda text: service.require_category(parse_category_name(text)))
+    amount = ask("금액(양수)", parse_amount)
+    memo = ask("메모(선택)", str.strip, default="")
+    rule = service.add_rule(day=day, type=tx_type, category=category, amount=amount, memo=memo)
+    print(f"[저장 완료] {describe_rule(rule)}")
+    print(f"[안내] 거래 만들기: recurring apply --month YYYY-MM")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_recurring_list(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    rules = service.rules()
+    if not rules:
+        print("반복 규칙이 없습니다. recurring add 로 추가하세요.")
+        return EXIT_OK
+    rows = [(r.id, f"{r.day}일", r.type, r.category, format_amount(r.amount), r.memo) for r in rules]
+    print(table(("ID", "매월", "타입", "카테고리", "금액", "메모"), rows, right_align=[1, 4]))
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_recurring_remove(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    rule = service.remove_rule(args.id)
+    print(f"[삭제 완료] {describe_rule(rule)} (이미 만든 거래는 그대로)")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
+def cmd_recurring_apply(args: argparse.Namespace) -> int:
+    service = open_service(args)
+    month = parse_month(args.month)
+    result = service.apply_rules(month)
+    for tx in result.created:
+        print(f"[생성] {tx.id} {tx.date} {tx.type} {tx.category} {format_amount(tx.amount)}원 (규칙 {tx.recurring_id})")
+    for rule, reason in result.skipped:
+        print(f"[건너뜀] {rule.id}: {reason}")
+    print(f"[완료] {month} created={len(result.created)}, skipped={len(result.skipped)}")
+    return EXIT_OK
+
+
+@log_execution
+@handle_errors
 def cmd_category_add(args: argparse.Namespace) -> int:
     service = open_service(args)
     # 인자로 주면 틀렸을 때 오류로 끝내고, 대화형이면 형식·중복이 맞을 때까지 다시 묻는다
@@ -226,20 +294,9 @@ def cmd_category_list(args: argparse.Namespace) -> int:
 def cmd_category_remove(args: argparse.Namespace) -> int:
     service = open_service(args)
     moved = service.remove_category(args.name, args.replace_with)
-    suffix = f" (거래 {moved}건을 {args.replace_with}(으)로 옮김)" if moved else ""
+    suffix = f" (거래·반복 규칙 {moved}건을 {args.replace_with}(으)로 옮김)" if moved else ""
     print(f"[삭제 완료] category={args.name}{suffix}")
     return EXIT_OK
-
-
-def _not_ready(step: str):
-    """아직 만들지 않은 명령. 해당 단계에서 진짜 함수로 바꾼다."""
-
-    @log_execution
-    @handle_errors
-    def command(args: argparse.Namespace) -> int:
-        raise AppError(f"'{args.command_name}' 명령은 아직 구현하지 않았습니다.", f"작업 계획 {step} 단계에서 구현합니다.")
-
-    return command
 
 
 # ---- 파서 ---------------------------------------------------------------
@@ -329,18 +386,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--to", dest="date_to", metavar="YYYY-MM-DD")
     p.add_argument("--force", action="store_true", help="이미 있는 파일을 덮어쓰기")
 
-    _add_command(sub, "backup", "데이터 파일 백업 (data/backups/시각/)", _not_ready("a-8"), common)
+    _add_command(sub, "backup", "데이터 파일 백업 (data/backups/시각/)", cmd_backup, common)
 
     recurring = _add_command(sub, "recurring", "반복 내역 (월급·월세 등)", None, common)
     recurring_sub = recurring.add_subparsers(title="recurring 명령", metavar="<add|list|remove|apply>", required=True)
-    p = _add_command(recurring_sub, "add", "반복 규칙 추가 (대화형)", _not_ready("a-8"), common)
+    p = _add_command(recurring_sub, "add", "반복 규칙 추가 (대화형)", cmd_recurring_add, common)
     p.set_defaults(command_name="recurring add")
-    p = _add_command(recurring_sub, "list", "반복 규칙 목록", _not_ready("a-8"), common)
+    p = _add_command(recurring_sub, "list", "반복 규칙 목록", cmd_recurring_list, common)
     p.set_defaults(command_name="recurring list")
-    p = _add_command(recurring_sub, "remove", "반복 규칙 삭제", _not_ready("a-8"), common)
+    p = _add_command(recurring_sub, "remove", "반복 규칙 삭제", cmd_recurring_remove, common)
     p.set_defaults(command_name="recurring remove")
     p.add_argument("--id", required=True, help="삭제할 규칙 id")
-    p = _add_command(recurring_sub, "apply", "그 달의 반복 거래 만들기 (이미 만든 건 건너뜀)", _not_ready("a-8"), common)
+    p = _add_command(recurring_sub, "apply", "그 달의 반복 거래 만들기 (이미 만든 건 건너뜀)", cmd_recurring_apply, common)
     p.set_defaults(command_name="recurring apply")
     p.add_argument("--month", required=True, metavar="YYYY-MM")
 

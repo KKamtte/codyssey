@@ -7,13 +7,16 @@
 """
 
 import heapq
+import shutil
+from datetime import datetime
+from pathlib import Path
 from dataclasses import dataclass, replace
 from typing import Iterable, Iterator
 
 from .errors import NotFoundError, ValidationError
 from .csv_io import read_rows, write_transactions
-from .models import Budget, Transaction, TxType, parse_amount, parse_category_name, parse_date, parse_tags, parse_tx_id, parse_type
-from .storage import Storage
+from .models import Budget, RecurringRule, Transaction, TxType, parse_amount, parse_category_name, parse_date, parse_rule_id, parse_tags, parse_tx_id, parse_type
+from .storage import DATA_FILES, Storage
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,12 @@ class Page:
 
     items: list[Transaction]
     total: int
+
+
+@dataclass(frozen=True)
+class ApplyResult:
+    created: list[Transaction]
+    skipped: list[tuple[RecurringRule, str]]
 
 
 @dataclass(frozen=True)
@@ -155,12 +164,15 @@ class BudgetService:
         return name
 
     def count_in_category(self, name: str) -> int:
-        return sum(1 for tx in self.storage.transactions.stream() if tx.category == name)
+        """이 카테고리를 쓰는 거래 + 반복 규칙 수."""
+        in_transactions = sum(1 for tx in self.storage.transactions.stream() if tx.category == name)
+        in_rules = sum(1 for rule in self.storage.recurring.stream() if rule.category == name)
+        return in_transactions + in_rules
 
     def remove_category(self, name: str, replace_with: str | None = None) -> int:
-        """카테고리를 지운다. 사용 중이면 막고, replace_with 를 주면 거래를 옮긴 뒤 지운다 (결정 3).
+        """카테고리를 지운다. 사용 중이면 막고, replace_with 를 주면 거래·반복 규칙을 옮긴 뒤 지운다 (결정 3).
 
-        옮긴 거래 수를 돌려준다.
+        옮긴 거래·규칙 수를 돌려준다.
         """
         if not self.storage.categories.exists(name):
             raise NotFoundError(f"없는 카테고리입니다: {name}", f"등록된 카테고리: {', '.join(self.category_names())}")
@@ -176,16 +188,78 @@ class BudgetService:
         if in_use:
             if replace_with is None:
                 raise ValidationError(
-                    f"'{name}' 카테고리를 쓰는 거래가 {in_use}건 있어 삭제할 수 없습니다.",
+                    f"'{name}' 카테고리를 쓰는 거래·반복 규칙이 {in_use}건 있어 삭제할 수 없습니다.",
                     f"다른 카테고리로 옮기며 삭제: category remove {name} --replace-with <카테고리>",
                 )
-            # 거래를 먼저 옮기고(원자적 재작성) 그다음 카테고리를 지운다.
-            # 중간에 멈춰도 "카테고리는 남아 있고 거래는 옮겨진" 상태라 데이터가 어긋나지 않는다.
+            # 거래·규칙을 먼저 옮기고(원자적 재작성) 그다음 카테고리를 지운다.
+            # 중간에 멈춰도 "카테고리는 남아 있고 일부는 옮겨진" 상태라 없는 카테고리를 가리키는 데이터가 생기지 않는다.
             moved = self.storage.transactions.update_where(
                 lambda tx: replace(tx, category=replace_with) if tx.category == name else tx
             )
+            moved += self.storage.recurring.update_where(
+                lambda rule: replace(rule, category=replace_with) if rule.category == name else rule
+            )
         self.storage.categories.remove(name)
         return moved
+
+    # ---- 반복 내역 (보너스) ----------------------------------------------------
+
+    def add_rule(self, *, day: int, type: TxType, category: str, amount: int, memo: str = "") -> RecurringRule:
+        self.require_category(category)
+        rule = RecurringRule(self.storage.recurring.next_id(), day, type, category, amount, memo.strip())
+        self.storage.recurring.add(rule)
+        return rule
+
+    def rules(self) -> list[RecurringRule]:
+        return sorted(self.storage.recurring.stream(), key=lambda rule: (rule.day, rule.number))
+
+    def remove_rule(self, raw_id: str) -> RecurringRule:
+        rule_id = parse_rule_id(raw_id)
+        found = next((rule for rule in self.storage.recurring.stream() if rule.id == rule_id), None)
+        if found is None:
+            raise NotFoundError(f"없는 반복 규칙입니다: {rule_id}", "recurring list 로 id 를 확인하세요.")
+        self.storage.recurring.update_where(lambda rule: None if rule.id == rule_id else rule)
+        return found
+
+    def apply_rules(self, month: str) -> ApplyResult:
+        """month 에 반복 규칙의 거래를 만든다. 이미 그 달에 만든 규칙은 건너뛴다 (두 번 실행해도 안전).
+
+        "이미 만들었나"는 거래의 recurring_id 로 판단한다. 파일을 한 번 훑어 그 달에 만든 규칙 id 만 모은다.
+        """
+        done = {tx.recurring_id for tx in self.storage.transactions.stream() if tx.recurring_id and tx.month == month}
+        categories = set(self.category_names())
+        created: list[Transaction] = []
+        skipped: list[tuple[RecurringRule, str]] = []
+        for rule in self.rules():
+            if rule.id in done:
+                skipped.append((rule, "이 달에 이미 만들었습니다"))
+            elif rule.category not in categories:
+                skipped.append((rule, f"카테고리 '{rule.category}'가 없습니다"))
+            else:
+                created.append(self.add_transaction(
+                    type=rule.type, date=rule.date_in(month), amount=rule.amount,
+                    category=rule.category, memo=rule.memo, recurring_id=rule.id,
+                ))
+        return ApplyResult(created, skipped)
+
+    # ---- 백업 (보너스) ---------------------------------------------------------
+
+    def backup(self, now: datetime | None = None) -> Path:
+        """데이터 파일을 backups/YYYYMMDD-HHMMSS/ 에 복사한다 (결정 13). 만든 폴더를 돌려준다.
+
+        같은 초에 두 번 실행하면 -2, -3 을 붙여 이전 백업을 덮어쓰지 않는다.
+        """
+        stamp = (now or datetime.now()).strftime("%Y%m%d-%H%M%S")
+        root = self.storage.data_dir / "backups"
+        target, n = root / stamp, 2
+        while target.exists():
+            target, n = root / f"{stamp}-{n}", n + 1
+        target.mkdir(parents=True)
+        for name in DATA_FILES:
+            source = self.storage.data_dir / name
+            if source.exists():
+                shutil.copy2(source, target / name)  # copy2: 수정 시각 같은 정보도 같이 복사
+        return target
 
     # ---- 거래 --------------------------------------------------------------
 

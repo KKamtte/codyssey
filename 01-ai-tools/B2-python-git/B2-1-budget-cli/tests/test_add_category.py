@@ -112,7 +112,7 @@ class CategoryTest(CliTestCase):
         self.add(category="transport")
         code, out, _ = self.run_cli("category", "remove", "food", "--replace-with", "etc")
         self.assertEqual(code, 0)
-        self.assertIn("거래 1건을 etc(으)로 옮김", out)
+        self.assertIn("거래·반복 규칙 1건을 etc(으)로 옮김", out)
         self.assertEqual([t["category"] for t in self.transactions()], ["etc", "transport"])
 
     def test_remove_errors(self):
